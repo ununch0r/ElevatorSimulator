@@ -4,7 +4,17 @@ import java.util.Queue;
 
 public class Passenger {
     private Floor currentFloor;
+
+    public Floor getDestinationFloor() {
+        return destinationFloor;
+    }
+
     private Floor destinationFloor;
+
+    public float getWeight() {
+        return weight;
+    }
+
     private float weight;
     private boolean isRiding;
     private int queue;
