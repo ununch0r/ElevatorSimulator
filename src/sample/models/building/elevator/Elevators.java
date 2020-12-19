@@ -2,9 +2,11 @@ package sample.models.building.elevator;
 
 import sample.models.building.Building;
 import sample.models.building.Floor;
+import sample.models.building.Mediator;
 import sample.models.building.passenger.Passenger;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
@@ -13,15 +15,19 @@ public class Elevators extends  Thread {
     private float maxWeight;
     public int currentFloor;
     private List<Passenger> passengersInside;
-    private List<Integer> destinations;
+    private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
+    private Mediator mediator;
+    private int idNum;
 
-    public Elevators(float maxWeight){
+    public Elevators(float maxWeight, Mediator mediator,int idNum){
         passengersInside = new ArrayList<>();
-        destinations = new ArrayList<>();
+        destinations = new LinkedList<>();
         currentFloor = 0;
         this.maxWeight = maxWeight;
         currentDirection = DirectionEnum.Stay;
+        this.mediator = mediator;
+        this.idNum = idNum;
     }
 
     public DirectionEnum moveNext() {
@@ -64,7 +70,7 @@ public class Elevators extends  Thread {
             }
         }
         else{
-            var nextFloor = destinations.get(0);
+            var nextFloor = destinations.element();
 
             if(nextFloor - currentFloor < 0)
             {
@@ -140,7 +146,7 @@ public class Elevators extends  Thread {
 
     private void arrivedToFloor()
     {
-
+        mediator.notify(this);
     }
 
     public void setStrategy(IElevatorStrategy str){
@@ -182,8 +188,8 @@ public class Elevators extends  Thread {
 
         if(!destinations.isEmpty()){
             if(strategy.ifLoadPassengers(this.currentFloor, this.passengersInside)
-                    && currentFloor == destinations.get(0)){
-                destinations.remove(0);
+                    && currentFloor == destinations.element()){
+                destinations.poll();
             }
         }
     }
@@ -211,6 +217,19 @@ public class Elevators extends  Thread {
         passengersInside.add(passenger);
     }
 
+    public DirectionEnum getCurrentDirection()
+    {
+        return currentDirection;
+    }
+
+    public void AddNewDestination(int floorNunber)
+    {
+        for (int i : destinations) {
+            if(i == floorNunber) return;
+        }
+
+        destinations.add(floorNunber);
+    }
 
     @Override
     public void run()
@@ -221,15 +240,13 @@ public class Elevators extends  Thread {
             goToFloor(moveNext());
 
             if(strategy.ifLoadPassengers(this.currentFloor, this.passengersInside)){
-                Building building = Building.getInstance(null,null);
-                Queue<Passenger> queue = building.getFloors().get(this.currentFloor).getQueues().get(building.getElevators().indexOf(this));
-                queue.forEach(p -> {
-                    if(canEnter(p)){
-                        passengersInside.add(p);
-                    }
-                });
+                arrivedToFloor();
             }
 
         }
+    }
+
+    public int getIdNum() {
+        return idNum;
     }
 }

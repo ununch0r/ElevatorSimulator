@@ -2,6 +2,7 @@ package sample.models.building.passenger;
 
 import sample.models.building.Building;
 import sample.models.building.Floor;
+import sample.models.building.Mediator;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Timer;
 public class PassengerManager {
     private List<Timer> timers = new ArrayList<>();
     private static PassengerManager instance = null;
+    private Mediator mediator = new Mediator();
 
     private PassengerManager(int minTimeToSpawn, int maxTimeToSpawn){
         Random random = new Random(LocalTime.now().toNanoOfDay());
@@ -19,7 +21,7 @@ public class PassengerManager {
 
         for (Floor floor: floors) {
             Timer timer  = new Timer();
-            timer.schedule(new PassengerCreator(floor,floors, 60),0,random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
+            timer.schedule(new PassengerCreator(floor,floors, 60,mediator),0,random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
             timers.add(timer);
         }
     }

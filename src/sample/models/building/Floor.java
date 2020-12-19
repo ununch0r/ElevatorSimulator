@@ -9,10 +9,12 @@ import java.util.Queue;
 
 public class Floor {
     private List<Queue<Passenger>> passengers;
+    private int id;
 
-    public  Floor(int amountOfElevators ){
+    public  Floor(int amountOfElevators, int id ){
         //int amountOfElevators = Building.getInstance(null,null).getElevators().size();
         passengers = new ArrayList<>();
+        this.id = id;
 
         for(int i = 0; i < amountOfElevators; ++i){
             passengers.add(new LinkedList<>());
@@ -23,6 +25,10 @@ public class Floor {
     }
     public List<Queue<Passenger>> getQueues(){
         return passengers;
+    }
+
+    public int getId() {
+        return id;
     }
 }
 
