@@ -8,7 +8,7 @@
             <children>
                 <ComboBox fx:id="floorsCount" layoutX="87.0" layoutY="114.0" onAction="#onFloorCountChange" prefWidth="150.0" />
                 <ComboBox fx:id="elevatorsCount" layoutX="89.0" layoutY="248.0" onAction="#onElevatorCountChange" prefWidth="150.0" />
-                <Button layoutX="159.0" layoutY="522.0" mnemonicParsing="false" onAction="#onAnimateClick" text="Animate" />
+                <Button layoutX="142.0" layoutY="522.0" mnemonicParsing="false" onAction="#onMoveElevatorClick" text="Move Elevator" />
                 <ComboBox fx:id="elevatorNum" layoutX="250.0" layoutY="522.0" prefHeight="25.0" prefWidth="80.0" />
                 <ComboBox fx:id="floorNum" layoutX="250.0" layoutY="570.0" prefHeight="25.0" prefWidth="82.0" />
                 <Button layoutX="142.0" layoutY="567.0" mnemonicParsing="false" onAction="#onPersonRender" text="Render Person" />
@@ -17,6 +17,8 @@
                 <Label layoutX="262.0" layoutY="256.0" text="EC" textFill="WHITE" />
                 <Label layoutX="253.0" layoutY="120.0" text="FC" textFill="WHITE" />
                 <Button layoutX="91.0" layoutY="622.0" mnemonicParsing="false" onAction="#onPersonMove" text="Move Person To Elevator" />
+                <Button layoutX="92.0" layoutY="660.0" mnemonicParsing="false" onAction="#onOutOfElevatorClick" prefHeight="25.0" prefWidth="168.0" text="Move person out of elevator" />
+                <Button layoutX="279.0" layoutY="622.0" mnemonicParsing="false" onAction="#onRemovePersons" text="Remove Persons" />
             </children></AnchorPane>
     </right>
     <left>

@@ -55,21 +55,22 @@ public class Controller implements Initializable {
     private Rectangle backgroundRect;
     private HashMap<Pair<Integer,Integer>,List<ImageView>> queues;
     private HashMap<Integer,List<ImageView>> personsInElevator;
+    private List<ImageView> personsToRemove;
     private List<Image> personImages;
     Random random;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         System.out.println("Initialize");
+        personsToRemove = new ArrayList<>();
         random = new Random();
         queues = new HashMap<>();
         personImages = new ArrayList<>();
         try {
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\elevatorProject\\ElevatorSimulator\\src\\sample\\Person1.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\elevatorProject\\ElevatorSimulator\\src\\sample\\Person2.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\elevatorProject\\ElevatorSimulator\\src\\sample\\Person3.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\elevatorProject\\ElevatorSimulator\\src\\sample\\Person4.png")));
-
+            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person1.png")));
+            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person2.png")));
+            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person3.png")));
+            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person4.png")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -174,7 +175,6 @@ public class Controller implements Initializable {
                         Duration.seconds(3),elevator
                 );
                 animation.setToY(floor.getY() - elevator.getY());
-                System.out.println(elevator.getY());
                 ArrayList<Animation> personAnimations = new ArrayList<>();
                 personsInElevator.get(elevatorNum - 1).forEach(person -> {
                     TranslateTransition personAnimation = new TranslateTransition(
@@ -192,7 +192,27 @@ public class Controller implements Initializable {
         animationThread.run();
     }
 
-    public void onAnimateClick(ActionEvent event) {
+
+    private void movePersonOutOfElevator(int elevator){
+        Runnable animationMove = new Runnable() {
+            @Override
+            public void run() {
+                List<ImageView> queue = personsInElevator.get(elevator - 1);
+                ImageView person = queue.get(0);
+                queue.remove(person);
+                personsToRemove.add(person);
+                TranslateTransition animation = new TranslateTransition(Duration.seconds(3),person);
+                animation.setToX(-person.getLayoutX());
+                animation.play();
+                queue.forEach( pers -> {
+                    pers.setLayoutX(pers.getLayoutX() - personWidth);
+                });
+            }
+        };
+        animationMove.run();
+    }
+
+    public void onMoveElevatorClick(ActionEvent event) {
         moveElevatorToFloor(elevatorNum.getSelectionModel().getSelectedItem(),floorNum.getSelectionModel().getSelectedItem());
     }
 
@@ -225,7 +245,6 @@ public class Controller implements Initializable {
                 );
                 animation.setToX(rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX());
                 personsInElevator.get(elevator - 1).add(person);
-                System.out.println(personsInElevator.get(elevator - 1).size());
                 animation.play();
                 queqe.forEach( p -> {
                     p.setLayoutX(p.getLayoutX() + personWidth);
@@ -238,6 +257,14 @@ public class Controller implements Initializable {
     public void onPersonMove(ActionEvent event) {
         movePersonToElevator(floorNum.getSelectionModel().getSelectedItem(),
                 elevatorNum.getSelectionModel().getSelectedItem());
+    }
+
+    public void onOutOfElevatorClick(ActionEvent event) {
+        movePersonOutOfElevator(elevatorNum.getSelectionModel().getSelectedItem());
+    }
+
+    public void onRemovePersons(ActionEvent event) {
+        elevatorPane.getChildren().removeAll(personsToRemove);
     }
 }
 
