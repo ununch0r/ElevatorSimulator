@@ -24,4 +24,10 @@ public class Building {
     public List<Elevators> getElevators() {
         return elevators;
     }
+
+    public void setStrategy(IElevatorStrategy strategy){
+        elevators.forEach(el -> {
+            el.setStrategy(strategy);
+        });
+    }
 }

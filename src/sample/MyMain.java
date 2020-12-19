@@ -9,7 +9,7 @@ public class MyMain {
         List<Elevators> elevators = new ArrayList<>();
 
         for (int i=0;i<3;++i){
-            elevators.add(new Elevators());
+            elevators.add(new Elevators(new InterruptibleStrategy(), 69));
         }
 
         for (int i=0;i<5;++i){
