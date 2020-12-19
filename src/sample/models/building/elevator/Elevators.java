@@ -251,7 +251,7 @@ public class Elevators extends  Thread  {
             }
 
             if(!passengersInside.isEmpty()) continue;
-            
+
             if(currentDirection == DirectionEnum.Stay){
                 try {
                     this.wait();
