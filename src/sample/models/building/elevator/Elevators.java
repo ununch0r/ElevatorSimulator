@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class Elevators extends  Thread {
+public class Elevators extends  Thread  {
     private IElevatorStrategy strategy;
     private float maxWeight;
     public int currentFloor;
@@ -104,7 +104,7 @@ public class Elevators extends  Thread {
             for (Passenger p : passengersInside) {
                 if(currentFloor - getPassengerFloor(p) < 0)
                 {
-                    return false;
+                    return true;
                 }
             }
         }
@@ -158,6 +158,7 @@ public class Elevators extends  Thread {
         if(direction == DirectionEnum.Stay)
         {
             currentDirection = direction;
+            return;
         }
 
         if(direction == DirectionEnum.Down) {
@@ -191,6 +192,8 @@ public class Elevators extends  Thread {
                     && currentFloor == destinations.element()){
                 destinations.poll();
             }
+        } else {
+            currentDirection = DirectionEnum.Stay;
         }
     }
 
@@ -199,6 +202,7 @@ public class Elevators extends  Thread {
         List<Floor> floors = building.getFloors();
         passengersInside.forEach(p -> {
             if(floors.indexOf(p.getDestinationFloor()) == this.currentFloor){
+                //запускається анімація виходу пасажира
                 passengersInside.remove(p);
             }
         });
@@ -214,6 +218,7 @@ public class Elevators extends  Thread {
     }
 
     public void addPassenger(Passenger passenger){
+        //запускається анімація входу пасажира (або можна в медіаторі її запустити)
         passengersInside.add(passenger);
     }
 
@@ -222,27 +227,38 @@ public class Elevators extends  Thread {
         return currentDirection;
     }
 
-    public void AddNewDestination(int floorNunber)
+    public void AddNewDestination(int floorNumber)
     {
         for (int i : destinations) {
-            if(i == floorNunber) return;
+            if(i == floorNumber) return;
         }
 
-        destinations.add(floorNunber);
+        destinations.add(floorNumber);
     }
 
     @Override
-    public void run()
+    public void run ()
     {
         while (!destinations.isEmpty()){
             unloadPassengers();
 
             goToFloor(moveNext());
 
+            unloadPassengers();
+
             if(strategy.ifLoadPassengers(this.currentFloor, this.passengersInside)){
                 arrivedToFloor();
             }
 
+            if(!passengersInside.isEmpty()) continue;
+            
+            if(currentDirection == DirectionEnum.Stay){
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
