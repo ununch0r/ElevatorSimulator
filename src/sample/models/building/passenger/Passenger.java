@@ -5,6 +5,10 @@ import sample.models.building.Floor;
 import java.util.Queue;
 
 public class Passenger {
+    public Floor getCurrentFloor() {
+        return currentFloor;
+    }
+
     private Floor currentFloor;
 
     public Floor getDestinationFloor() {
