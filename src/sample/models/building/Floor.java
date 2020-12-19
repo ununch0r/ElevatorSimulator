@@ -1,4 +1,6 @@
-package sample;
+package sample.models.building;
+
+import sample.models.building.passenger.Passenger;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,7 +18,7 @@ public class Floor {
             passengers.add(new LinkedList<>());
         }
     }
-    void addPassengerToQueue(Passenger passenger){
+    public void addPassengerToQueue(Passenger passenger){
         passengers.get(passenger.getQueue()).add(passenger);
     }
     public List<Queue<Passenger>> getQueues(){

@@ -1,4 +1,6 @@
-package sample;
+package sample.models.building.passenger;
+
+import sample.models.building.Floor;
 
 import java.util.Queue;
 

@@ -1,8 +1,13 @@
-package sample;
+package sample.models.building.passenger;
 
-import java.sql.Time;
+import sample.models.building.Building;
+import sample.models.building.Floor;
+
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Timer;
 
 public class PassengerManager {
     private List<Timer> timers = new ArrayList<>();

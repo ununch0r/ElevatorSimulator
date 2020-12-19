@@ -1,23 +1,30 @@
-package sample;
+package sample.models.building.elevator;
+
+import sample.models.building.Building;
+import sample.models.building.Floor;
+import sample.models.building.passenger.Passenger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
 public class Elevators extends  Thread {
-    private  IElevatorStrategy strategy;
+    private IElevatorStrategy strategy;
     private float maxWeight;
     public int currentFloor;
     private List<Passenger> passengersInside;
     private List<Integer> destinations;
 
 
-    public Elevators(IElevatorStrategy str, float mw){
+    public Elevators(float mw){
         passengersInside = new ArrayList<>();
         destinations = new ArrayList<>();
         currentFloor = 1;
-        strategy = str;
         maxWeight = mw;
+    }
+
+    public void setStrategy(IElevatorStrategy str){
+         strategy = str;
     }
 
     private void GoToFloor(int f){ //запускає анімацію на інтерфейсі

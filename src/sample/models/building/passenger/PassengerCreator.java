@@ -1,9 +1,10 @@
-package sample;
+package sample.models.building.passenger;
+
+import sample.models.building.Floor;
 
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
 import java.util.TimerTask;
 
 public class PassengerCreator extends TimerTask {

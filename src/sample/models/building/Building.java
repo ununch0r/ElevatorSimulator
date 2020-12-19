@@ -1,4 +1,7 @@
-package sample;
+package sample.models.building;
+
+import sample.models.building.elevator.Elevators;
+import sample.models.building.elevator.IElevatorStrategy;
 
 import java.util.List;
 

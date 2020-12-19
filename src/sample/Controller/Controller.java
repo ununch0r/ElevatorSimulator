@@ -1,4 +1,4 @@
-package sample;
+package sample.Controller;
 
 import javafx.animation.Animation;
 import javafx.animation.TranslateTransition;
@@ -19,6 +19,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import sample.models.building.Building;
+import sample.models.building.passenger.PassengerManager;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,19 +60,25 @@ public class Controller implements Initializable {
     private List<ImageView> personsToRemove;
     private List<Image> personImages;
     Random random;
+    PassengerManager pm;
+    Building building;
+
+
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         System.out.println("Initialize");
+
         personsToRemove = new ArrayList<>();
         random = new Random();
         queues = new HashMap<>();
         personImages = new ArrayList<>();
         try {
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person1.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person2.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person3.png")));
-            personImages.add(new Image(new FileInputStream("D:\\3 course labs\\CPP\\ElevatorSimulation\\src\\sample\\Person4.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person1.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person3.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person4.png")));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -265,6 +273,10 @@ public class Controller implements Initializable {
 
     public void onRemovePersons(ActionEvent event) {
         elevatorPane.getChildren().removeAll(personsToRemove);
+    }
+
+    public void onStart(ActionEvent event) {
+
     }
 }
 
