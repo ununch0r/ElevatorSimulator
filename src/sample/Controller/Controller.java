@@ -181,28 +181,20 @@ public class Controller implements Initializable {
 
     }
 
-    private void moveElevatorToFloor(int elevatorNum, int floorNum){
+    private void moveElevatorToFloor(int elevatorNum, int srcFloor,int destFloor){
         Runnable animationThread = new Runnable() {
             @Override
             public void run() {
                 Rectangle elevator = elevators.get(elevatorNum - 1);
-                Rectangle floor = floors.get(floorNum - 1);
+                Rectangle floor = floors.get(destFloor - 1);
                 TranslateTransition animation = new TranslateTransition(
-                        Duration.seconds(3),elevator
+                        Duration.seconds(Math.abs(srcFloor - destFloor)* floorHeight/30),elevator
                 );
                 animation.setToY(floor.getY() - elevator.getY());
                 ArrayList<Animation> personAnimations = new ArrayList<>();
-                personsInElevator.get(elevatorNum - 1).forEach(person -> {
-                    TranslateTransition personAnimation = new TranslateTransition(
-                            Duration.seconds(3),person
-                    );
-                    personAnimation.setToY(floor.getY() + floorHeight / 2 - person.getLayoutY());
-                    personAnimations.add(personAnimation);
-                });
+
                 animation.play();
-                personAnimations.forEach(anim -> {
-                    anim.play();
-                });
+
             }
         };
         animationThread.run();
@@ -306,7 +298,6 @@ public class Controller implements Initializable {
                             public void run() {
                                 for(int i = 0;i < countChange;i++){
                                     renderPerson(floor.getId(),floor.getQueueNumber(queue),queue.size());
-                                    System.out.println("Render");
                                 }
                             }
                         });
@@ -315,6 +306,23 @@ public class Controller implements Initializable {
             });
         });
 
+        elevators.forEach(elevator -> {
+            elevator.currentFloorProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            moveElevatorToFloor(elevator.getIdNum(),number.intValue(),t1.intValue());
+                            System.out.println("Animation start");
+                        }
+                    });
+                }
+            });
+        });
+        elevators.forEach(elevator -> {
+            elevator.start();
+        });
         PassengerManager pm = PassengerManager.getInstance(5000,10000,mediator);
 
     }

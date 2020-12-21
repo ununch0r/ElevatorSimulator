@@ -44,14 +44,14 @@ public class Mediator {
         elevator.AddNewDestination(passenger.getCurrentFloor().getId());
         if(elevator.getCurrentDirection() == DirectionEnum.Stay)
         {
-            elevator.notify();
+//            elevator.notify();
         }
     }
     private void reactOnElevator(Elevators elevator)
     {
         ObservableList<Passenger> passengers = Building.getInstance(null,null).
                  getFloors().
-                 get(elevator.currentFloor).
+                 get(elevator.getCurrentFloor()).
                  getPassengers().
                  get(elevator.getIdNum());
 

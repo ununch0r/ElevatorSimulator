@@ -1,5 +1,7 @@
 package sample.models.building.elevator;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
@@ -13,7 +15,7 @@ import java.util.Queue;
 public class Elevators extends  Thread  {
     private IElevatorStrategy strategy;
     private float maxWeight;
-    public int currentFloor;
+    private IntegerProperty currentFloor;
     private List<Passenger> passengersInside;
     private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
@@ -23,11 +25,23 @@ public class Elevators extends  Thread  {
     public Elevators(float maxWeight, Mediator mediator,int idNum){
         passengersInside = new ArrayList<>();
         destinations = new LinkedList<>();
-        currentFloor = 0;
+        currentFloor = new SimpleIntegerProperty(0);
         this.maxWeight = maxWeight;
         currentDirection = DirectionEnum.Stay;
         this.mediator = mediator;
         this.idNum = idNum;
+    }
+
+    public int getCurrentFloor() {
+        return currentFloor.get();
+    }
+
+    public IntegerProperty currentFloorProperty() {
+        return currentFloor;
+    }
+
+    private void setCurrentFloor(int currentFloor) {
+        this.currentFloor.set(currentFloor);
     }
 
     public DirectionEnum moveNext() {
@@ -43,12 +57,12 @@ public class Elevators extends  Thread  {
             }
 
             var passengerFloor = getPassengerFloor(passengersInside.get(0));
-            var min = Math.abs(currentFloor - passengerFloor);
+            var min = Math.abs(currentFloor.get() - passengerFloor);
 
             for (Passenger p : passengersInside) {
 
                 var currentPassengerFloor = getPassengerFloor(p);
-                var difference = currentFloor - currentPassengerFloor;
+                var difference = currentFloor.get() - currentPassengerFloor;
 
                 if(IsMatchWithCurrentDirection(difference)) {
                     difference = Math.abs(difference);
@@ -60,7 +74,7 @@ public class Elevators extends  Thread  {
                 }
             }
 
-            if(passengerFloor - currentFloor < 0)
+            if(passengerFloor - currentFloor.get() < 0)
             {
                 return DirectionEnum.Down;
             }
@@ -72,7 +86,7 @@ public class Elevators extends  Thread  {
         else{
             var nextFloor = destinations.element();
 
-            if(nextFloor - currentFloor < 0)
+            if(nextFloor - currentFloor.get() < 0)
             {
                 currentDirection = DirectionEnum.Down;
             }
@@ -102,7 +116,7 @@ public class Elevators extends  Thread  {
         if(currentDirection == DirectionEnum.Down)
         {
             for (Passenger p : passengersInside) {
-                if(currentFloor - getPassengerFloor(p) < 0)
+                if(currentFloor.get() - getPassengerFloor(p) < 0)
                 {
                     return true;
                 }
@@ -111,7 +125,7 @@ public class Elevators extends  Thread  {
         else
         {
             for (Passenger p : passengersInside) {
-                if(currentFloor - getPassengerFloor(p) > 0)
+                if(currentFloor.get() - getPassengerFloor(p) > 0)
                 {
                     return true;
                 }
@@ -162,34 +176,34 @@ public class Elevators extends  Thread  {
         }
 
         if(direction == DirectionEnum.Down) {
-            currentFloor--;
+            currentFloor.set(currentFloor.get() - 1);
         }
         else if (direction == DirectionEnum.Up){
-            currentFloor++;
+            currentFloor.set(currentFloor.get() + 1);
         }
 
         var building = Building.getInstance(null,null);
         var maxFloor = building.getFloors().size();
 
-        if(currentFloor == 0 && passengersInside.isEmpty()) {
+        if(currentFloor.get() == 0 && passengersInside.isEmpty()) {
             currentDirection = DirectionEnum.Stay;
         }
 
-        if(currentFloor == 0 && !passengersInside.isEmpty()) {
+        if(currentFloor.get() == 0 && !passengersInside.isEmpty()) {
             currentDirection = DirectionEnum.Up;
         }
 
-        if(currentFloor == maxFloor && passengersInside.isEmpty()) {
+        if(currentFloor.get() == maxFloor && passengersInside.isEmpty()) {
             currentDirection = DirectionEnum.Stay;
         }
 
-        if(currentFloor == maxFloor && !passengersInside.isEmpty()) {
+        if(currentFloor.get() == maxFloor && !passengersInside.isEmpty()) {
             currentDirection = DirectionEnum.Down;
         }
 
         if(!destinations.isEmpty()){
-            if(strategy.ifLoadPassengers(this.currentFloor, this.passengersInside)
-                    && currentFloor == destinations.element()){
+            if(strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)
+                    && currentFloor.get() == destinations.element()){
                 destinations.poll();
             }
         } else {
@@ -201,7 +215,7 @@ public class Elevators extends  Thread  {
         Building building = Building.getInstance(null,null);
         List<Floor> floors = building.getFloors();
         passengersInside.forEach(p -> {
-            if(floors.indexOf(p.getDestinationFloor()) == this.currentFloor){
+            if(floors.indexOf(p.getDestinationFloor()) == this.currentFloor.get()){
                 //запускається анімація виходу пасажира
                 passengersInside.remove(p);
             }
@@ -246,7 +260,7 @@ public class Elevators extends  Thread  {
 
             unloadPassengers();
 
-            if(strategy.ifLoadPassengers(this.currentFloor, this.passengersInside)){
+            if(strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)){
                 arrivedToFloor();
             }
 
@@ -259,6 +273,15 @@ public class Elevators extends  Thread  {
                     e.printStackTrace();
                 }
             }
+//        while(true){
+//            currentFloor.set(currentFloor.get() + 1);
+//            System.out.println("move");
+//            try {
+//                sleep(5000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            if(currentFloor.get() == Building.getInstance(null,null).getFloors().size()) break;
         }
     }
 
