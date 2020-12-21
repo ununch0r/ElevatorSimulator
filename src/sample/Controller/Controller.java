@@ -2,6 +2,10 @@ package sample.Controller;
 
 import javafx.animation.Animation;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,6 +24,10 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 import javafx.util.Pair;
 import sample.models.building.Building;
+import sample.models.building.Floor;
+import sample.models.building.Mediator;
+import sample.models.building.elevator.Elevators;
+import sample.models.building.passenger.Passenger;
 import sample.models.building.passenger.PassengerManager;
 
 import java.io.FileInputStream;
@@ -34,10 +42,6 @@ public class Controller implements Initializable {
     private ComboBox<Integer> floorsCount;
     @FXML
     private ComboBox<Integer> elevatorsCount;
-    @FXML
-    private ComboBox<Integer> elevatorNum;
-    @FXML
-    private ComboBox<Integer> floorNum;
 
 
     private double floorHeight = 49;
@@ -59,21 +63,32 @@ public class Controller implements Initializable {
     private HashMap<Integer,List<ImageView>> personsInElevator;
     private List<ImageView> personsToRemove;
     private List<Image> personImages;
-    Random random;
-    PassengerManager pm;
-    Building building;
-
-
-
+    Random random = new Random();
+    private Building building;
+    private int floorsNum;
+    private int elevatorsNum;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        System.out.println("Initialize");
-
         personsToRemove = new ArrayList<>();
         random = new Random();
         queues = new HashMap<>();
         personImages = new ArrayList<>();
+        floorsCount.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
+                floorsNum = t1;
+                System.out.println("Fllors num " + floorsNum);
+            }
+        });
+
+        elevatorsCount.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
+                elevatorsNum = t1;
+                System.out.println("Elevators num " + elevatorsNum);
+            }
+        });
         try {
             personImages.add(new Image(new FileInputStream("src/sample/images/Person1.png")));
             personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
@@ -131,14 +146,12 @@ public class Controller implements Initializable {
         elevatorPane.getChildren().addAll(elevators);
     }
 
-    private void renderPerson(int floor,int elevator){
+    private void renderPerson(int floor,int elevator,int ququeSize){
         ImageView newPerson = new ImageView(personImages.get(random.nextInt(personImages.size() - 1)));
         newPerson.setFitWidth(personWidth);
         newPerson.setFitHeight(floorHeight / 2);
         newPerson.setLayoutY(floors.get(floor - 1).getY() + floorHeight / 2);
-        List<ImageView> persons =  queues.get(new Pair<>(floor - 1,elevator - 1));
-        newPerson.setLayoutX(elevators.get(elevator - 1).getX() - personWidth - (persons.size() + 1) * personWidth);
-        queues.get(new Pair<>(floor - 1,elevator - 1)).add(newPerson);
+        newPerson.setLayoutX(elevators.get(elevator).getX() - personWidth - (ququeSize + 1) * personWidth);
         elevatorPane.getChildren().add(newPerson);
     }
 
@@ -164,12 +177,7 @@ public class Controller implements Initializable {
             elevators.clear();
         }
         renderElevators(elevatorsCount.getSelectionModel().getSelectedItem());
-        for(int i = 1;i <= elevators.size();i++){
-            elevatorNum.getItems().add(i);
-        }
-        for(int i = 1;i <= floors.size();i++){
-            floorNum.getItems().add(i);
-        }
+
 
     }
 
@@ -220,21 +228,21 @@ public class Controller implements Initializable {
         animationMove.run();
     }
 
-    public void onMoveElevatorClick(ActionEvent event) {
-        moveElevatorToFloor(elevatorNum.getSelectionModel().getSelectedItem(),floorNum.getSelectionModel().getSelectedItem());
-    }
-
-    public void onPersonRender(ActionEvent event) {
-        int elevator = elevatorNum.getSelectionModel().getSelectedItem() ;
-        int floor = floorNum.getSelectionModel().getSelectedItem();
-        if(queues.get(new Pair<>(floor - 1,elevator - 1)) == null){
-            queues.put(new Pair<>(floor - 1,elevator - 1),new ArrayList<>());
-        }
-        if(queues.get(new Pair<>(floor - 1,elevator - 1)).size() > maxPersonsInQueqe){
-            return;
-        }
-        renderPerson(floor,elevator);
-    }
+//    public void onMoveElevatorClick(ActionEvent event) {
+//        moveElevatorToFloor(elevatorNum.getSelectionModel().getSelectedItem(),floorNum.getSelectionModel().getSelectedItem());
+//    }
+//
+//    public void onPersonRender(ActionEvent event) {
+//        int elevator = elevatorNum.getSelectionModel().getSelectedItem() ;
+//        int floor = floorNum.getSelectionModel().getSelectedItem();
+//        if(queues.get(new Pair<>(floor - 1,elevator - 1)) == null){
+//            queues.put(new Pair<>(floor - 1,elevator - 1),new ArrayList<>());
+//        }
+//        if(queues.get(new Pair<>(floor - 1,elevator - 1)).size() > maxPersonsInQueqe){
+//            return;
+//        }
+//        renderPerson(floor,elevator);
+//    }
 
     public void movePersonToElevator(int floor,int elevator){
         Runnable moveAnimation = new Runnable() {
@@ -244,7 +252,7 @@ public class Controller implements Initializable {
                 ImageView person = queqe.get(0);
                 queqe.remove(person);
                 Rectangle rElevator = elevators.get(elevator - 1);
-                if(personsInElevator.get(elevator - 1) == null){
+                if(personsInElevator.get(elevator) == null){
                     personsInElevator.put(elevator - 1,new ArrayList<>());
                 }
                 TranslateTransition animation = new TranslateTransition(
@@ -261,21 +269,53 @@ public class Controller implements Initializable {
         };
         moveAnimation.run();
     }
-
-    public void onPersonMove(ActionEvent event) {
-        movePersonToElevator(floorNum.getSelectionModel().getSelectedItem(),
-                elevatorNum.getSelectionModel().getSelectedItem());
-    }
-
-    public void onOutOfElevatorClick(ActionEvent event) {
-        movePersonOutOfElevator(elevatorNum.getSelectionModel().getSelectedItem());
-    }
+//
+//    public void onPersonMove(ActionEvent event) {
+//        movePersonToElevator(floorNum.getSelectionModel().getSelectedItem(),
+//                elevatorNum.getSelectionModel().getSelectedItem());
+//    }
+//
+//    public void onOutOfElevatorClick(ActionEvent event) {
+//        movePersonOutOfElevator(elevatorNum.getSelectionModel().getSelectedItem());
+//    }
 
     public void onRemovePersons(ActionEvent event) {
         elevatorPane.getChildren().removeAll(personsToRemove);
     }
 
     public void onStart(ActionEvent event) {
+        ArrayList<Elevators> elevators = new ArrayList<>();
+        ArrayList<Floor> floors = new ArrayList<>();
+        Mediator mediator = new Mediator();
+        for(int i = 1;i <= elevatorsNum;i++){
+            elevators.add(new Elevators(20,mediator,i));
+        }
+        for(int i = 1; i <= floorsNum;i++){
+            floors.add(new Floor(elevatorsNum,i));
+        }
+        building = Building.getInstance(floors,elevators);
+        floors.forEach(floor -> {
+            floor.getPassengers().forEach(queue -> {
+                queue.addListener(new ListChangeListener<Passenger>() {
+                    @Override
+                    public void onChanged(Change<? extends Passenger> change) {
+                        change.next();
+                        int countChange = change.getAddedSize();
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                for(int i = 0;i < countChange;i++){
+                                    renderPerson(floor.getId(),floor.getQueueNumber(queue),queue.size());
+                                    System.out.println("Render");
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        PassengerManager pm = PassengerManager.getInstance(5000,10000,mediator);
 
     }
 }

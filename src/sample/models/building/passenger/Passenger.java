@@ -1,10 +1,8 @@
 package sample.models.building.passenger;
 
+import javafx.collections.ObservableList;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
-
-import javax.print.attribute.standard.Media;
-import java.util.Queue;
 
 public class Passenger {
 
@@ -42,14 +40,14 @@ public class Passenger {
 
     private int chooseQueue()
     {
-        Queue<Passenger> min = currentFloor.getQueues().stream().min((o1, o2) -> {
+        ObservableList<Passenger> min = currentFloor.getPassengers().stream().min((o1, o2) -> {
             if(o1.size() > o2.size()) return 1;
             else if(o1.size() < o2.size()) return -1;
             else return 0;
         }).get();
 
-        mediator.notify(this);
-        return currentFloor.getQueues().indexOf(min);
+//        mediator.notify(this);
+        return currentFloor.getPassengers().indexOf(min);
     }
 
     public int getQueue() {

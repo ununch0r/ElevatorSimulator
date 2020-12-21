@@ -13,10 +13,11 @@ import java.util.Timer;
 public class PassengerManager {
     private List<Timer> timers = new ArrayList<>();
     private static PassengerManager instance = null;
-    private Mediator mediator = new Mediator();
+    private Mediator mediator;
 
-    private PassengerManager(int minTimeToSpawn, int maxTimeToSpawn){
+    private PassengerManager(int minTimeToSpawn, int maxTimeToSpawn,Mediator mediator){
         Random random = new Random(LocalTime.now().toNanoOfDay());
+        this.mediator = mediator;
         List<Floor> floors = Building.getInstance(null,null).getFloors();
 
         for (Floor floor: floors) {
@@ -26,8 +27,8 @@ public class PassengerManager {
         }
     }
 
-    public static PassengerManager getInstance(int minTimeToSpawn, int maxTimeToSpawn) {
-        if(instance == null) instance = new PassengerManager(minTimeToSpawn, maxTimeToSpawn);
+    public static PassengerManager getInstance(int minTimeToSpawn, int maxTimeToSpawn,Mediator mediator) {
+        if(instance == null) instance = new PassengerManager(minTimeToSpawn, maxTimeToSpawn,mediator);
         return instance;
     }
 }

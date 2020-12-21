@@ -1,6 +1,7 @@
 package sample.models.building.passenger;
 
 import sample.models.building.Floor;
+import sample.models.building.Mediator;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -11,11 +12,13 @@ public class PassengerCreator extends TimerTask {
     private Floor sourceFloor;
     private List<Floor> floors;
     private float maxWeight;
+    private Mediator mediator;
 
-    public PassengerCreator(Floor floor, List<Floor> floors,float maxWeight){
+    public PassengerCreator(Floor floor, List<Floor> floors,float maxWeight,Mediator mediator){
         this.sourceFloor=floor;
         this.floors = floors;
         this.maxWeight = maxWeight;
+        this.mediator = mediator;
     }
 
     @Override
@@ -24,6 +27,6 @@ public class PassengerCreator extends TimerTask {
         Floor destFloor = floors.get(random.nextInt(floors.size() - 1));
         while (destFloor == sourceFloor) destFloor = floors.get(random.nextInt(floors.size() - 1));
 
-        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor,destFloor,1 + random.nextFloat() * (maxWeight - 1)));
+        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor,destFloor,1 + random.nextFloat() * (maxWeight - 1),mediator));
     }
 }

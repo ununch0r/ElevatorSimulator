@@ -1,10 +1,9 @@
 package sample.models.building;
 
+import javafx.collections.ObservableList;
 import sample.models.building.elevator.DirectionEnum;
 import sample.models.building.elevator.Elevators;
 import sample.models.building.passenger.Passenger;
-
-import java.util.Queue;
 
 public class Mediator {
 
@@ -50,15 +49,16 @@ public class Mediator {
     }
     private void reactOnElevator(Elevators elevator)
     {
-        Queue<Passenger> passengers = Building.getInstance(null,null).
+        ObservableList<Passenger> passengers = Building.getInstance(null,null).
                  getFloors().
                  get(elevator.currentFloor).
-                 getQueues().
+                 getPassengers().
                  get(elevator.getIdNum());
 
-        while (!passengers.isEmpty() && elevator.canEnter(passengers.element()))
+        while (!passengers.isEmpty() && elevator.canEnter(passengers.get((0))))
         {
-            elevator.addPassenger(passengers.poll());
+            elevator.addPassenger(passengers.get(0));
+            passengers.remove(0);
         }
     }
 
