@@ -2,12 +2,13 @@ package sample.models.building.elevator;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.passenger.Passenger;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -16,20 +17,25 @@ public class Elevators extends  Thread  {
     private IElevatorStrategy strategy;
     private float maxWeight;
     private IntegerProperty currentFloor;
-    private List<Passenger> passengersInside;
+    private ObservableList<Passenger> passengersInside;
     private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
     private Mediator mediator;
     private int idNum;
 
     public Elevators(float maxWeight, Mediator mediator,int idNum){
-        passengersInside = new ArrayList<>();
+        passengersInside = FXCollections.observableArrayList();
         destinations = new LinkedList<>();
         currentFloor = new SimpleIntegerProperty(0);
         this.maxWeight = maxWeight;
         currentDirection = DirectionEnum.Stay;
         this.mediator = mediator;
         this.idNum = idNum;
+        setName("Elevator " + idNum);
+    }
+
+    public ObservableList<Passenger> getPassengersInside() {
+        return passengersInside;
     }
 
     public int getCurrentFloor() {
@@ -234,6 +240,13 @@ public class Elevators extends  Thread  {
     public void addPassenger(Passenger passenger){
         //запускається анімація входу пасажира (або можна в медіаторі її запустити)
         passengersInside.add(passenger);
+        try {
+            synchronized (this) {
+                this.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public DirectionEnum getCurrentDirection()
@@ -241,7 +254,7 @@ public class Elevators extends  Thread  {
         return currentDirection;
     }
 
-    public void AddNewDestination(int floorNumber)
+    synchronized public void AddNewDestination(int floorNumber)
     {
         for (int i : destinations) {
             if(i == floorNumber) return;
@@ -251,37 +264,38 @@ public class Elevators extends  Thread  {
     }
 
     @Override
-    public void run ()
-    {
-        while (!destinations.isEmpty()){
-            unloadPassengers();
-
-            goToFloor(moveNext());
-
-            unloadPassengers();
-
-            if(strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)){
-                arrivedToFloor();
-            }
-
-            if(!passengersInside.isEmpty()) continue;
-
-            if(currentDirection == DirectionEnum.Stay){
+    public void run () {
+        while (true) {
+            if (!destinations.isEmpty()) {
+                System.out.println("El " + getName() + " before wait");
+                unloadPassengers();
+                goToFloor(moveNext());
                 try {
-                    this.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                        synchronized (this) {
+                            this.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                System.out.println("El " + getName() + " after wait");
+                unloadPassengers();
+
+                if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)) {
+                    arrivedToFloor();
             }
-//        while(true){
-//            currentFloor.set(currentFloor.get() + 1);
-//            System.out.println("move");
-//            try {
-//                sleep(5000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            if(currentFloor.get() == Building.getInstance(null,null).getFloors().size()) break;
+
+                    if (!passengersInside.isEmpty()) continue;
+                } else {
+                    try {
+                        synchronized (this) {
+                            this.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
         }
     }
 

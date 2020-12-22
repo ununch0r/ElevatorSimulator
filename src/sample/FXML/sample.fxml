@@ -2,9 +2,9 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="728.0" prefWidth="1366.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller.Controller">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller.Controller">
     <right>
-        <AnchorPane prefHeight="728.0" prefWidth="461.0" style="-fx-background-color: #333433;" BorderPane.alignment="CENTER">
+        <AnchorPane prefHeight="728.0" prefWidth="425.0" style="-fx-background-color: #333433;" BorderPane.alignment="CENTER">
             <children>
                 <ComboBox fx:id="floorsCount" layoutX="87.0" layoutY="114.0" onAction="#onFloorCountChange" prefWidth="150.0" />
                 <ComboBox fx:id="elevatorsCount" layoutX="89.0" layoutY="248.0" onAction="#onElevatorCountChange" prefWidth="150.0" />

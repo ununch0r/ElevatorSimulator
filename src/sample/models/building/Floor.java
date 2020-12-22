@@ -9,7 +9,6 @@ public class Floor {
     private int id;
 
     public  Floor(int amountOfElevators, int id ){
-        //int amountOfElevators = Building.getInstance(null,null).getElevators().size();
         passengers = FXCollections.observableArrayList();
         this.id = id;
 

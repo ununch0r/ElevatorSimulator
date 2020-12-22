@@ -18,8 +18,10 @@ public class Passenger {
         this.destinationFloor = destinationFloor;
         this.isRiding = false;
         this.mediator = mediator;
-        this.queue = chooseQueue();
         this.weight = weight;
+        this.queue = chooseQueue();
+        this.mediator.notify(this);
+
     }
 
     public Floor getCurrentFloor() {
@@ -46,7 +48,6 @@ public class Passenger {
             else return 0;
         }).get();
 
-        mediator.notify(this);
         return currentFloor.getPassengers().indexOf(min);
     }
 

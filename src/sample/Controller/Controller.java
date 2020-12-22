@@ -14,10 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
+import javafx.scene.paint.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -27,6 +24,7 @@ import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.elevator.Elevators;
+import sample.models.building.elevator.InterruptibleStrategy;
 import sample.models.building.passenger.Passenger;
 import sample.models.building.passenger.PassengerManager;
 
@@ -55,8 +53,8 @@ public class Controller implements Initializable {
     private double spaceBetweenElevators = maxPersonsInQueqe * personWidth + 30;
     private double elevatorsOffset = 70;
     private double elevatorWidth = elevatorsCapasity * personWidth + 5;
-    private List<Rectangle> floors;
-    private List<Rectangle> elevators;
+    private List<Rectangle> floorsViews;
+    private List<Rectangle> elevatorsViews;
     private List<Label> floorLabels;
     private Rectangle backgroundRect;
     private HashMap<Pair<Integer,Integer>,List<ImageView>> queues;
@@ -67,6 +65,9 @@ public class Controller implements Initializable {
     private Building building;
     private int floorsNum;
     private int elevatorsNum;
+    private Image elevatorImage;
+    private Image roofImage;
+    private Object a = new Object();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -94,6 +95,8 @@ public class Controller implements Initializable {
             personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
             personImages.add(new Image(new FileInputStream("src/sample/images/Person3.png")));
             personImages.add(new Image(new FileInputStream("src/sample/images/Person4.png")));
+            elevatorImage = new Image(new FileInputStream("src/sample/images/elevator.png"));
+            roofImage = new Image(new FileInputStream("src/sample/images/roof.jpeg"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -105,10 +108,10 @@ public class Controller implements Initializable {
             elevatorsCount.getItems().add(i);
         }
         backgroundRect = new Rectangle(0,0,(int)elevatorPane.getPrefWidth(),(int)elevatorPane.getPrefHeight());
-        backgroundRect.setFill(Color.LIGHTGRAY);
+        backgroundRect.setFill(new ImagePattern(roofImage));
         elevatorPane.getChildren().add(backgroundRect);
-        floors = new ArrayList<>();
-        elevators = new ArrayList<>();
+        floorsViews = new ArrayList<>();
+        elevatorsViews = new ArrayList<>();
         floorLabels = new ArrayList<>();
         personsInElevator = new HashMap<>();
     }
@@ -129,52 +132,59 @@ public class Controller implements Initializable {
             floorNumber.setLayoutX(floorNumberOffset);
             floorNumber.setLayoutY((elevatorPane.getPrefHeight() - floorHeight * i) + (0.2 * floorHeight));
             floorLabels.add(floorNumber);
-            floors.add(curFloor);
+            floorsViews.add(curFloor);
         }
-        elevatorPane.getChildren().addAll(floors);
+        elevatorPane.getChildren().addAll(floorsViews);
         elevatorPane.getChildren().addAll(floorLabels);
     }
 
     private void renderElevators(int count){
-        Color elevatorColor = Color.BLUE;
+        ImagePattern elevatorView = new ImagePattern(elevatorImage);
         for(int i = 1;i <= count;i++){
             Rectangle curElevator = new Rectangle((spaceBetweenElevators * i) + (i * elevatorWidth),elevatorPane.getPrefHeight() - floorHeight,
                     elevatorWidth,floorHeight);
-            curElevator.setFill(elevatorColor);
-            elevators.add(curElevator);
+            curElevator.setFill(elevatorView);
+            elevatorsViews.add(curElevator);
         }
-        elevatorPane.getChildren().addAll(elevators);
+        elevatorPane.getChildren().addAll(elevatorsViews);
     }
 
     private void renderPerson(int floor,int elevator,int ququeSize){
+        if(ququeSize > maxPersonsInQueqe){
+            return;
+        }
         ImageView newPerson = new ImageView(personImages.get(random.nextInt(personImages.size() - 1)));
         newPerson.setFitWidth(personWidth);
         newPerson.setFitHeight(floorHeight / 2);
-        newPerson.setLayoutY(floors.get(floor - 1).getY() + floorHeight / 2);
-        newPerson.setLayoutX(elevators.get(elevator).getX() - personWidth - (ququeSize + 1) * personWidth);
+        newPerson.setLayoutY(floorsViews.get(floor - 1).getY() + floorHeight / 2);
+        newPerson.setLayoutX(elevatorsViews.get(elevator).getX() - personWidth - (ququeSize + 1) * personWidth);
+        if(queues.get(new Pair<>(floor - 1,elevator)) == null){
+            queues.put(new Pair<>(floor - 1,elevator),new ArrayList<>());
+        }
+        queues.get(new Pair<>(floor - 1,elevator)).add(newPerson);
         elevatorPane.getChildren().add(newPerson);
     }
 
     public void onFloorCountChange(ActionEvent event) {
-        if(!floors.isEmpty()) {
-            elevatorPane.getChildren().removeAll(floors);
+        if(!floorsViews.isEmpty()) {
+            elevatorPane.getChildren().removeAll(floorsViews);
             elevatorPane.getChildren().removeAll(floorLabels);
-            floors.clear();
+            floorsViews.clear();
             floorLabels.clear();
         }
         renderFloors(floorsCount.getSelectionModel().getSelectedItem());
         if(elevatorsCount.getSelectionModel().getSelectedItem() != null){
-            if(!elevators.isEmpty()){
-                elevatorPane.getChildren().removeAll(elevators);
+            if(!elevatorsViews.isEmpty()){
+                elevatorPane.getChildren().removeAll(elevatorsViews);
                 renderElevators(elevatorsCount.getSelectionModel().getSelectedItem());
             }
         }
     }
 
     public void onElevatorCountChange(ActionEvent event) {
-        if(!elevators.isEmpty()) {
-            elevatorPane.getChildren().removeAll(elevators);
-            elevators.clear();
+        if(!elevatorsViews.isEmpty()) {
+            elevatorPane.getChildren().removeAll(elevatorsViews);
+            elevatorsViews.clear();
         }
         renderElevators(elevatorsCount.getSelectionModel().getSelectedItem());
 
@@ -182,23 +192,37 @@ public class Controller implements Initializable {
     }
 
     private void moveElevatorToFloor(int elevatorNum, int srcFloor,int destFloor){
-        Runnable animationThread = new Runnable() {
-            @Override
-            public void run() {
-                Rectangle elevator = elevators.get(elevatorNum - 1);
-                Rectangle floor = floors.get(destFloor - 1);
+            Elevators elevatorThread = building.getElevators().get(elevatorNum - 1);
+                Rectangle elevator = elevatorsViews.get(elevatorNum - 1);
+                Rectangle floor = floorsViews.get(destFloor - 1);
+                double animationDuration = Math.abs(srcFloor - destFloor)* floorHeight/30;
+                System.out.println(animationDuration);
                 TranslateTransition animation = new TranslateTransition(
-                        Duration.seconds(Math.abs(srcFloor - destFloor)* floorHeight/30),elevator
+                        Duration.seconds(animationDuration),elevator
                 );
                 animation.setToY(floor.getY() - elevator.getY());
-                ArrayList<Animation> personAnimations = new ArrayList<>();
-
+                animation.setOnFinished(e -> {
+                    synchronized (elevatorThread) {
+                        elevatorThread.notify();
+                    }
+                });
+                ArrayList<Animation> personsAnimations = new ArrayList<>();
+                if(personsInElevator.get(elevatorNum - 1) != null) {
+                    personsInElevator.get(elevatorNum - 1).forEach(person -> {
+                        TranslateTransition personAnimation = new TranslateTransition(
+                                Duration.seconds(animationDuration), person
+                        );
+                        personAnimation.setToY(floor.getY() + floorHeight / 2 - person.getLayoutY());
+                        personsAnimations.add(personAnimation);
+                    });
+                }
                 animation.play();
+                personsAnimations.forEach(pa -> {
+                    pa.play();
+                });
 
             }
-        };
-        animationThread.run();
-    }
+
 
 
     private void movePersonOutOfElevator(int elevator){
@@ -227,9 +251,7 @@ public class Controller implements Initializable {
 //    public void onPersonRender(ActionEvent event) {
 //        int elevator = elevatorNum.getSelectionModel().getSelectedItem() ;
 //        int floor = floorNum.getSelectionModel().getSelectedItem();
-//        if(queues.get(new Pair<>(floor - 1,elevator - 1)) == null){
-//            queues.put(new Pair<>(floor - 1,elevator - 1),new ArrayList<>());
-//        }
+
 //        if(queues.get(new Pair<>(floor - 1,elevator - 1)).size() > maxPersonsInQueqe){
 //            return;
 //        }
@@ -237,29 +259,29 @@ public class Controller implements Initializable {
 //    }
 
     public void movePersonToElevator(int floor,int elevator){
-        Runnable moveAnimation = new Runnable() {
-            @Override
-            public void run() {
-                List<ImageView> queqe = queues.get(new Pair<>(floor - 1,elevator - 1));
-                ImageView person = queqe.get(0);
-                queqe.remove(person);
-                Rectangle rElevator = elevators.get(elevator - 1);
-                if(personsInElevator.get(elevator) == null){
+        List<ImageView> queue = queues.get(new Pair<>(floor - 1,elevator - 1));
+        Thread elevatorThread = building.getElevators().get(elevator - 1);
+        ImageView person = queue.get(0);
+        queue.remove(person);
+        Rectangle rElevator = elevatorsViews.get(elevator - 1);
+        if(personsInElevator.get(elevator) == null){
                     personsInElevator.put(elevator - 1,new ArrayList<>());
                 }
-                TranslateTransition animation = new TranslateTransition(
+        TranslateTransition animation = new TranslateTransition(
                         Duration.seconds(Math.abs(
                                 (rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX())/20)),person
                 );
-                animation.setToX(rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX());
-                personsInElevator.get(elevator - 1).add(person);
+        animation.setToX(rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX());
+        personsInElevator.get(elevator - 1).add(person);
+                animation.setOnFinished(e -> {
+                    synchronized (elevatorThread) {
+                        elevatorThread.notify();
+                    }
+                });
                 animation.play();
-                queqe.forEach( p -> {
+                queue.forEach( p -> {
                     p.setLayoutX(p.getLayoutX() + personWidth);
                 });
-            }
-        };
-        moveAnimation.run();
     }
 //
 //    public void onPersonMove(ActionEvent event) {
@@ -281,6 +303,7 @@ public class Controller implements Initializable {
         Mediator mediator = new Mediator();
         for(int i = 1;i <= elevatorsNum;i++){
             elevators.add(new Elevators(20,mediator,i));
+            elevators.get(i - 1).setStrategy(new InterruptibleStrategy());
         }
         for(int i = 1; i <= floorsNum;i++){
             floors.add(new Floor(elevatorsNum,i));
@@ -307,14 +330,25 @@ public class Controller implements Initializable {
         });
 
         elevators.forEach(elevator -> {
-            elevator.currentFloorProperty().addListener(new ChangeListener<Number>() {
+                    elevator.currentFloorProperty().addListener(new ChangeListener<Number>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                            moveElevatorToFloor(elevator.getIdNum(),number.intValue(),t1.intValue());
+                        }
+                    });
+                });
+
+        elevators.forEach(elevator -> {
+            elevator.getPassengersInside().addListener(new ListChangeListener<Passenger>() {
                 @Override
-                public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                public void onChanged(Change<? extends Passenger> change) {
+                    change.next();
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {
-                            moveElevatorToFloor(elevator.getIdNum(),number.intValue(),t1.intValue());
-                            System.out.println("Animation start");
+                            if(change.getAddedSize() > 0){
+                                movePersonToElevator(elevator.getCurrentFloor(),elevator.getIdNum());
+                            }
                         }
                     });
                 }
@@ -327,5 +361,6 @@ public class Controller implements Initializable {
 
     }
 }
+
 
 

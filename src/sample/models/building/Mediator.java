@@ -41,10 +41,13 @@ public class Mediator {
                                        getElevators().
                                        get(passenger.getQueue());
 
+
         elevator.AddNewDestination(passenger.getCurrentFloor().getId());
         if(elevator.getCurrentDirection() == DirectionEnum.Stay)
         {
-//            elevator.notify();
+            synchronized (elevator) {
+                elevator.notify();
+            }
         }
     }
     private void reactOnElevator(Elevators elevator)
@@ -53,7 +56,7 @@ public class Mediator {
                  getFloors().
                  get(elevator.getCurrentFloor()).
                  getPassengers().
-                 get(elevator.getIdNum());
+                 get(elevator.getIdNum() - 1);
 
         while (!passengers.isEmpty() && elevator.canEnter(passengers.get((0))))
         {
