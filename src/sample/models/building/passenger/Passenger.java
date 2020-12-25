@@ -20,7 +20,7 @@ public class Passenger {
         this.mediator = mediator;
         this.weight = weight;
         this.queue = chooseQueue();
-        System.out.println(String.format("Passenger add to %d floor %d elevator",currentFloor.getId() - 1,queue));
+        System.out.println(String.format("Passenger add to %d floor %d elevator",currentFloor.getId(),queue));
         this.mediator.notify(this);
     }
 

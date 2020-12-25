@@ -54,7 +54,9 @@ public class Elevators extends  Thread  {
         if(passengersInside.isEmpty() && destinations.isEmpty()) {
             return DirectionEnum.Stay;
         }
-
+        if(currentFloor.get() == Building.getInstance(null,null).getFloors().size() - 1){
+            System.out.println();
+        }
         if(!passengersInside.isEmpty())
         {
             if(isChangeDirectionNeeded())
@@ -174,7 +176,7 @@ public class Elevators extends  Thread  {
     }
 
     private void goToFloor(DirectionEnum direction){ //запускає анімацію на інтерфейсі
-        //йде анімація
+
         if(direction == DirectionEnum.Stay)
         {
             currentDirection = direction;
@@ -189,7 +191,7 @@ public class Elevators extends  Thread  {
         }
 
         var building = Building.getInstance(null,null);
-        var maxFloor = building.getFloors().size();
+        var maxFloor = building.getFloors().size() - 1;
 
         if(currentFloor.get() == 0 && passengersInside.isEmpty()) {
             currentDirection = DirectionEnum.Stay;

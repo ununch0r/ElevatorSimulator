@@ -56,7 +56,7 @@ public class Mediator {
                  getFloors().
                  get(elevator.getCurrentFloor()).
                  getPassengers().
-                 get(elevator.getIdNum() - 1);
+                 get(elevator.getIdNum());
 
         while (!passengers.isEmpty() && elevator.canEnter(passengers.get((0))))
         {
