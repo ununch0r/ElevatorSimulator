@@ -22,7 +22,7 @@ public class PassengerManager {
 
         for (Floor floor: floors) {
             Timer timer  = new Timer();
-            timer.schedule(new PassengerCreator(floor,floors, 60,mediator),0,random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
+            timer.schedule(new PassengerCreator(floor,floors, 60,mediator),random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1),random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
             timers.add(timer);
         }
     }

@@ -238,7 +238,7 @@ public class Elevators extends  Thread  {
     }
 
     public void addPassenger(Passenger passenger){
-        //запускається анімація входу пасажира (або можна в медіаторі її запустити)
+        System.out.println(String.format("Passanger on floor %d go to elevator %d",currentFloor.get(),getIdNum()));
         passengersInside.add(passenger);
         try {
             synchronized (this) {
@@ -267,7 +267,6 @@ public class Elevators extends  Thread  {
     public void run () {
         while (true) {
             if (!destinations.isEmpty()) {
-                System.out.println("El " + getName() + " before wait");
                 unloadPassengers();
                 goToFloor(moveNext());
                 try {
@@ -277,7 +276,6 @@ public class Elevators extends  Thread  {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                System.out.println("El " + getName() + " after wait");
                 unloadPassengers();
 
                 if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)) {

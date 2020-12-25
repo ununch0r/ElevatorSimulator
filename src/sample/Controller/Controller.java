@@ -24,7 +24,7 @@ import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.elevator.Elevators;
-import sample.models.building.elevator.InterruptibleStrategy;
+import sample.models.building.elevator.UnInterruptibleStrategy;
 import sample.models.building.passenger.Passenger;
 import sample.models.building.passenger.PassengerManager;
 
@@ -67,7 +67,6 @@ public class Controller implements Initializable {
     private int elevatorsNum;
     private Image elevatorImage;
     private Image roofImage;
-    private Object a = new Object();
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -156,12 +155,14 @@ public class Controller implements Initializable {
         ImageView newPerson = new ImageView(personImages.get(random.nextInt(personImages.size() - 1)));
         newPerson.setFitWidth(personWidth);
         newPerson.setFitHeight(floorHeight / 2);
-        newPerson.setLayoutY(floorsViews.get(floor - 1).getY() + floorHeight / 2);
+        newPerson.setLayoutY(floorsViews.get(floor).getY() + floorHeight / 2);
         newPerson.setLayoutX(elevatorsViews.get(elevator).getX() - personWidth - (ququeSize + 1) * personWidth);
-        if(queues.get(new Pair<>(floor - 1,elevator)) == null){
-            queues.put(new Pair<>(floor - 1,elevator),new ArrayList<>());
+        if(queues.get(new Pair<>(floor,elevator)) == null){
+            queues.put(new Pair<>(floor,elevator),new ArrayList<>());
         }
-        queues.get(new Pair<>(floor - 1,elevator)).add(newPerson);
+        queues.get(new Pair<>(floor,elevator)).add(newPerson);
+//        System.out.println(String.format("Add quque (%d,%d)",floor,elevator));
+//        System.out.println(queues.get(new Pair<>(floor,elevator)));
         elevatorPane.getChildren().add(newPerson);
     }
 
@@ -192,11 +193,10 @@ public class Controller implements Initializable {
     }
 
     private void moveElevatorToFloor(int elevatorNum, int srcFloor,int destFloor){
-            Elevators elevatorThread = building.getElevators().get(elevatorNum - 1);
-                Rectangle elevator = elevatorsViews.get(elevatorNum - 1);
-                Rectangle floor = floorsViews.get(destFloor - 1);
+            Elevators elevatorThread = building.getElevators().get(elevatorNum);
+                Rectangle elevator = elevatorsViews.get(elevatorNum);
+                Rectangle floor = floorsViews.get(destFloor);
                 double animationDuration = Math.abs(srcFloor - destFloor)* floorHeight/30;
-                System.out.println(animationDuration);
                 TranslateTransition animation = new TranslateTransition(
                         Duration.seconds(animationDuration),elevator
                 );
@@ -207,8 +207,8 @@ public class Controller implements Initializable {
                     }
                 });
                 ArrayList<Animation> personsAnimations = new ArrayList<>();
-                if(personsInElevator.get(elevatorNum - 1) != null) {
-                    personsInElevator.get(elevatorNum - 1).forEach(person -> {
+                if(personsInElevator.get(elevatorNum) != null) {
+                    personsInElevator.get(elevatorNum).forEach(person -> {
                         TranslateTransition personAnimation = new TranslateTransition(
                                 Duration.seconds(animationDuration), person
                         );
@@ -259,20 +259,23 @@ public class Controller implements Initializable {
 //    }
 
     public void movePersonToElevator(int floor,int elevator){
-        List<ImageView> queue = queues.get(new Pair<>(floor - 1,elevator - 1));
-        Thread elevatorThread = building.getElevators().get(elevator - 1);
+        List<ImageView> queue = queues.get(new Pair<>(floor,elevator));
+        Thread elevatorThread = building.getElevators().get(elevator);
+        if(queue == null){
+            System.out.println("Not find quequ");
+        }
         ImageView person = queue.get(0);
         queue.remove(person);
-        Rectangle rElevator = elevatorsViews.get(elevator - 1);
+        Rectangle rElevator = elevatorsViews.get(elevator);
         if(personsInElevator.get(elevator) == null){
-                    personsInElevator.put(elevator - 1,new ArrayList<>());
+                    personsInElevator.put(elevator,new ArrayList<>());
                 }
         TranslateTransition animation = new TranslateTransition(
                         Duration.seconds(Math.abs(
-                                (rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX())/20)),person
+                                (rElevator.getX() + personsInElevator.get(elevator).size() * personWidth  - person.getLayoutX())/20)),person
                 );
-        animation.setToX(rElevator.getX() + personsInElevator.get(elevator - 1).size() * personWidth  - person.getLayoutX());
-        personsInElevator.get(elevator - 1).add(person);
+        animation.setToX(rElevator.getX() + personsInElevator.get(elevator).size() * personWidth  - person.getLayoutX());
+        personsInElevator.get(elevator).add(person);
                 animation.setOnFinished(e -> {
                     synchronized (elevatorThread) {
                         elevatorThread.notify();
@@ -303,7 +306,7 @@ public class Controller implements Initializable {
         Mediator mediator = new Mediator();
         for(int i = 1;i <= elevatorsNum;i++){
             elevators.add(new Elevators(20,mediator,i));
-            elevators.get(i - 1).setStrategy(new InterruptibleStrategy());
+            elevators.get(i - 1).setStrategy(new UnInterruptibleStrategy());
         }
         for(int i = 1; i <= floorsNum;i++){
             floors.add(new Floor(elevatorsNum,i));
@@ -320,7 +323,8 @@ public class Controller implements Initializable {
                             @Override
                             public void run() {
                                 for(int i = 0;i < countChange;i++){
-                                    renderPerson(floor.getId(),floor.getQueueNumber(queue),queue.size());
+                                    System.out.println(String.format("Passenger add to %d floor %d elevator",floor.getId() - 1,floor.getQueueNumber(queue)));
+                                    renderPerson(floor.getId() - 1,floor.getQueueNumber(queue),queue.size());
                                 }
                             }
                         });
@@ -333,7 +337,7 @@ public class Controller implements Initializable {
                     elevator.currentFloorProperty().addListener(new ChangeListener<Number>() {
                         @Override
                         public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                            moveElevatorToFloor(elevator.getIdNum(),number.intValue(),t1.intValue());
+                            moveElevatorToFloor(elevator.getIdNum() - 1,number.intValue() - 1,t1.intValue() - 1);
                         }
                     });
                 });
@@ -347,7 +351,8 @@ public class Controller implements Initializable {
                         @Override
                         public void run() {
                             if(change.getAddedSize() > 0){
-                                movePersonToElevator(elevator.getCurrentFloor(),elevator.getIdNum());
+                                System.out.println(String.format("Passanger on floor %d go to elevator %d",elevator.getCurrentFloor(),elevator.getIdNum()));
+                                movePersonToElevator(elevator.getCurrentFloor() - 1,elevator.getIdNum() - 1);
                             }
                         }
                     });
@@ -357,7 +362,7 @@ public class Controller implements Initializable {
         elevators.forEach(elevator -> {
             elevator.start();
         });
-        PassengerManager pm = PassengerManager.getInstance(5000,10000,mediator);
+        PassengerManager pm = PassengerManager.getInstance(10000,20000,mediator);
 
     }
 }
