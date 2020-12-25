@@ -305,7 +305,7 @@ public class Controller implements Initializable {
         ArrayList<Floor> floors = new ArrayList<>();
         Mediator mediator = new Mediator();
         for(int i = 0;i < elevatorsNum;i++){
-            elevators.add(new Elevators(20,mediator,i));
+            elevators.add(new Elevators(400,mediator,i));
             elevators.get(i).setStrategy(new UnInterruptibleStrategy());
         }
         for(int i = 0; i < floorsNum;i++){

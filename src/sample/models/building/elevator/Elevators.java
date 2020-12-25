@@ -145,10 +145,7 @@ public class Elevators extends  Thread  {
 
     private int getPassengerFloor(Passenger passenger)
     {
-        var building = Building.getInstance(null,null);
-        var passengerFloor = building.getFloors().indexOf(passenger.getCurrentFloor());
-
-        return passengerFloor;
+        return passenger.getDestinationFloor().getId();
     }
 
     private boolean IsMatchWithCurrentDirection(int difference)
@@ -223,7 +220,7 @@ public class Elevators extends  Thread  {
         Building building = Building.getInstance(null,null);
         List<Floor> floors = building.getFloors();
         passengersInside.forEach(p -> {
-            if(floors.indexOf(p.getDestinationFloor()) == this.currentFloor.get()){
+            if(p.getDestinationFloor().getId() == this.currentFloor.get()){
                 //запускається анімація виходу пасажира
                 passengersInside.remove(p);
             }
@@ -269,7 +266,6 @@ public class Elevators extends  Thread  {
     public void run () {
         while (true) {
             if (!destinations.isEmpty()) {
-                unloadPassengers();
                 goToFloor(moveNext());
                 try {
                         synchronized (this) {
@@ -283,19 +279,17 @@ public class Elevators extends  Thread  {
                 if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)) {
                     arrivedToFloor();
             }
+            if (!passengersInside.isEmpty()) continue;
 
-                    if (!passengersInside.isEmpty()) continue;
-                } else {
-                    try {
-                        synchronized (this) {
-                            this.wait();
-                        }
-                    } catch (InterruptedException e) {
+            } else {
+                try {
+                    synchronized (this) {
+                        this.wait();
+                    }
+                } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-
-
         }
     }
 

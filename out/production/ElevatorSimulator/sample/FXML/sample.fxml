@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller.Controller">
+    <right>
+        <AnchorPane prefHeight="728.0" prefWidth="425.0" style="-fx-background-color: #333433;" BorderPane.alignment="CENTER">
+            <children>
+                <ComboBox fx:id="floorsCount" layoutX="87.0" layoutY="114.0" onAction="#onFloorCountChange" prefWidth="150.0" />
+                <ComboBox fx:id="elevatorsCount" layoutX="89.0" layoutY="248.0" onAction="#onElevatorCountChange" prefWidth="150.0" />
+                <Button layoutX="142.0" layoutY="522.0" mnemonicParsing="false" text="Move Elevator" />
+                <Button layoutX="142.0" layoutY="567.0" mnemonicParsing="false" text="Render Person" />
+                <Label layoutX="262.0" layoutY="256.0" text="EC" textFill="WHITE" />
+                <Label layoutX="253.0" layoutY="120.0" text="FC" textFill="WHITE" />
+                <Button layoutX="91.0" layoutY="622.0" mnemonicParsing="false" text="Move Person To Elevator" />
+                <Button layoutX="92.0" layoutY="660.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="168.0" text="Move person out of elevator" />
+                <Button layoutX="279.0" layoutY="622.0" mnemonicParsing="false" text="Remove Persons" />
+            <Button layoutX="280.0" layoutY="662.0" mnemonicParsing="false" onAction="#onStart" prefHeight="25.0" prefWidth="104.0" text="Start" />
+            </children></AnchorPane>
+    </right>
+    <left>
+        <AnchorPane fx:id="elevatorPane" prefHeight="728.0" prefWidth="966.0" BorderPane.alignment="CENTER" />
+    </left>
+</BorderPane>
