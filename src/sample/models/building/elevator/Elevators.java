@@ -21,6 +21,7 @@ public class Elevators extends  Thread  {
     private final ObservableList<Passenger> passengersInside;
     private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
+    private boolean isAnimated = false;
     private int capacity;
     private Mediator mediator;
     private int idNum;
@@ -283,7 +284,7 @@ public class Elevators extends  Thread  {
     @Override
     public void run () {
         while (true) {
-            if (!destinations.isEmpty()) {
+            if (!destinations.isEmpty() || !passengersInside.isEmpty()) {
                 goToFloor(moveNext());
                 try {
                         synchronized (this) {
@@ -297,7 +298,7 @@ public class Elevators extends  Thread  {
                 if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)) {
                     arrivedToFloor();
             }
-            if (!passengersInside.isEmpty()) continue;
+//            if (!passengersInside.isEmpty()) continue;
 
             } else {
                 try {
