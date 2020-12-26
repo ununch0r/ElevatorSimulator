@@ -45,6 +45,9 @@ public class Mediator {
         elevator.AddNewDestination(passenger.getCurrentFloor().getId());
         if(elevator.getCurrentDirection() == DirectionEnum.Stay)
         {
+            if(elevator.isAnimated){
+                System.out.println("Bug");
+            }
             synchronized (elevator) {
                 elevator.notify();
             }

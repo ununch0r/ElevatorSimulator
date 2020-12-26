@@ -21,7 +21,7 @@ public class Elevators extends  Thread  {
     private final ObservableList<Passenger> passengersInside;
     private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
-    private boolean isAnimated = false;
+    public boolean isAnimated = false;
     private int capacity;
     private Mediator mediator;
     private int idNum;
@@ -55,7 +55,11 @@ public class Elevators extends  Thread  {
     }
 
     public DirectionEnum moveNext() {
+        if(isAnimated){
+            System.out.println("Bug");
+        }
         if(passengersInside.isEmpty() && destinations.isEmpty()) {
+            System.out.println("DiractionStay");
             return DirectionEnum.Stay;
         }
         if(currentFloor.get() == Building.getInstance(null,null).getFloors().size() - 1){
@@ -68,8 +72,8 @@ public class Elevators extends  Thread  {
                 changeDirection();
             }
 
-            var passengerFloor = getPassengerFloor(passengersInside.get(0));
-            var min = Math.abs(currentFloor.get() - passengerFloor);
+            int passengerFloor = getPassengerFloor(passengersInside.get(0));
+            int min = Math.abs(currentFloor.get() - passengerFloor);
 
             for (Passenger p : passengersInside) {
 
@@ -104,6 +108,9 @@ public class Elevators extends  Thread  {
             if(nextFloor - currentFloor.get() < 0)
             {
                 currentDirection = DirectionEnum.Down;
+            }
+            else if(nextFloor - currentFloor.get() == 0){
+                currentDirection = DirectionEnum.Stay;
             }
             else
             {
@@ -184,6 +191,12 @@ public class Elevators extends  Thread  {
         if(direction == DirectionEnum.Stay)
         {
             currentDirection = direction;
+            if(!destinations.isEmpty()){
+                if(strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)
+                        && currentFloor.get() == destinations.element()){
+                    destinations.poll();
+                }
+            }
             return;
         }
 
@@ -197,30 +210,31 @@ public class Elevators extends  Thread  {
         var building = Building.getInstance(null,null);
         var maxFloor = building.getFloors().size() - 1;
 
-        if(currentFloor.get() == 0 && passengersInside.isEmpty()) {
-            currentDirection = DirectionEnum.Stay;
-        }
-
-        if(currentFloor.get() == 0 && !passengersInside.isEmpty()) {
-            currentDirection = DirectionEnum.Up;
-        }
-
-        if(currentFloor.get() == maxFloor && passengersInside.isEmpty()) {
-            currentDirection = DirectionEnum.Stay;
-        }
-
-        if(currentFloor.get() == maxFloor && !passengersInside.isEmpty()) {
-            currentDirection = DirectionEnum.Down;
-        }
+//        if(currentFloor.get() == 0 && passengersInside.isEmpty()) {
+//            currentDirection = DirectionEnum.Stay;
+//        }
+//
+//        if(currentFloor.get() == 0 && !passengersInside.isEmpty()) {
+//            currentDirection = DirectionEnum.Up;
+//        }
+//
+//        if(currentFloor.get() == maxFloor && passengersInside.isEmpty() && destinations.isEmpty()) {
+//            currentDirection = DirectionEnum.Stay;
+//        }
+//
+//        if(currentFloor.get() == maxFloor && !passengersInside.isEmpty()) {
+//            currentDirection = DirectionEnum.Down;
+//        }
 
         if(!destinations.isEmpty()){
             if(strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)
                     && currentFloor.get() == destinations.element()){
                 destinations.poll();
             }
-        } else {
-            currentDirection = DirectionEnum.Stay;
         }
+//        else {
+//            currentDirection = DirectionEnum.Stay;
+//        }
     }
 
     public void unloadPassengers(){
@@ -243,6 +257,7 @@ public class Elevators extends  Thread  {
                             }
                         }
                     });
+        System.out.println("all unload and notified");
                 }
 
 
@@ -301,6 +316,7 @@ public class Elevators extends  Thread  {
 //            if (!passengersInside.isEmpty()) continue;
 
             } else {
+                System.out.println("dsd");
                 try {
                     synchronized (this) {
                         this.wait();
