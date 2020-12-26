@@ -149,9 +149,9 @@ public class Controller implements Initializable {
     }
 
     private void renderPerson(int floor,int elevator,int ququeSize){
-        if(ququeSize > maxPersonsInQueqe){
-            return;
-        }
+//        if(ququeSize > maxPersonsInQueqe){
+//            return;
+//        }
         ImageView newPerson = new ImageView(personImages.get(random.nextInt(personImages.size() - 1)));
         newPerson.setFitWidth(personWidth);
         newPerson.setFitHeight(floorHeight / 2);
@@ -268,9 +268,6 @@ public class Controller implements Initializable {
     public void movePersonToElevator(int floor,int elevator){
         List<ImageView> queue = queues.get(new Pair<>(floor,elevator));
         Thread elevatorThread = building.getElevators().get(elevator);
-        if(queue == null){
-            System.out.println("Not find quequ");
-        }
         ImageView person = queue.get(0);
         queue.remove(person);
         Rectangle rElevator = elevatorsViews.get(elevator);
@@ -316,7 +313,7 @@ public class Controller implements Initializable {
             elevators.get(i).setStrategy(new InterruptibleStrategy());
         }
         for(int i = 0; i < floorsNum;i++){
-            floors.add(new Floor(elevatorsNum,i));
+            floors.add(new Floor(elevatorsNum,4,i));
         }
         building = Building.getInstance(floors,elevators);
         floors.forEach(floor -> {

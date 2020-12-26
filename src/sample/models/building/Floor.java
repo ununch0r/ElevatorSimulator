@@ -11,11 +11,13 @@ import java.util.logging.Logger;
 
 public class Floor {
     private final ObservableList<ObservableList<Passenger>> passengers;
+    private int maxQueueSize;
     private int id;
-    //private static  Logger logger;
-    public  Floor(int amountOfElevators, int id ){
+
+    public  Floor(int amountOfElevators, int maxQueueSize, int id ){
         passengers = FXCollections.observableArrayList();
         this.id = id;
+        this.maxQueueSize = maxQueueSize;
 
         for(int i = 0; i < amountOfElevators; ++i){
             passengers.add(FXCollections.observableArrayList());
@@ -32,10 +34,10 @@ public class Floor {
         return passengers.indexOf(queue);
     }
 
-    public void addPassengerToQueue(Passenger passenger){
-
-        passengers.get(passenger.getQueue()).add(passenger);
-       // logger.info(String.format("Person was added to %d queue",id));
+    public void addPassengerToQueue(Passenger passenger) {
+        if (passengers.get(passenger.getQueue()).size() < maxQueueSize) {
+            passengers.get(passenger.getQueue()).add(passenger);
+        }
     }
 
     public int getId() {
@@ -44,4 +46,3 @@ public class Floor {
 
 
 }
-
