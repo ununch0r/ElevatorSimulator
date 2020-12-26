@@ -6,15 +6,15 @@ import sample.models.building.passenger.Passenger;
 
 public class Floor {
     private final ObservableList<ObservableList<Passenger>> passengers;
-    private int maxQueueSize;
-    private int id;
+    private final int maxQueueSize;
+    private final int id;
 
-    public  Floor(int amountOfElevators, int maxQueueSize, int id ){
+    public Floor(int amountOfElevators, int maxQueueSize, int id) {
         passengers = FXCollections.observableArrayList();
         this.id = id;
         this.maxQueueSize = maxQueueSize;
 
-        for(int i = 0; i < amountOfElevators; ++i){
+        for (int i = 0; i < amountOfElevators; ++i) {
             passengers.add(FXCollections.observableArrayList());
         }
     }
@@ -23,7 +23,7 @@ public class Floor {
         return passengers;
     }
 
-    public int getQueueNumber(ObservableList<Passenger> queue){
+    public int getQueueNumber(ObservableList<Passenger> queue) {
         return passengers.indexOf(queue);
     }
 
