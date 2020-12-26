@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import sample.models.building.Building;
 import sample.models.building.Floor;
+import sample.models.building.Logger;
 import sample.models.building.Mediator;
 import sample.models.building.passenger.Passenger;
 
@@ -25,6 +26,7 @@ public class Elevators extends  Thread  {
     private int capacity;
     private Mediator mediator;
     private int idNum;
+    private String threadName;
 
     public Elevators(float maxWeight,int capacity, Mediator mediator,int idNum){
         passengersInside = FXCollections.observableArrayList();
@@ -35,6 +37,7 @@ public class Elevators extends  Thread  {
         this.mediator = mediator;
         this.idNum = idNum;
         this.capacity = capacity;
+       // this.threadName=Thread.currentThread().getName();
         setName("Elevator " + idNum);
     }
 
@@ -231,10 +234,12 @@ public class Elevators extends  Thread  {
         passengersInside.forEach(p -> {
             if (p.getDestinationFloor().getId() == this.currentFloor.get()) {
                 toDelete.add(p);
+
             }
         });
                     toDelete.forEach(td -> {
                         passengersInside.remove(td);
+                        Logger.Log(String.format("Passenger go out of the elevator %d, floor %d. Thread: %s \n",idNum,currentFloor.get(),this.getName()));
                         synchronized (this) {
                             try {
                                 this.wait();
@@ -256,7 +261,8 @@ public class Elevators extends  Thread  {
     }
 
     public void addPassenger(Passenger passenger){
-        System.out.println(String.format("Passanger on floor %d go to elevator %d",currentFloor.get(),getIdNum()));
+       // System.out.println(String.format("Passanger on floor %d go to elevator %d",currentFloor.get(),getIdNum()));
+        Logger.Log(String.format("Passenger on floor %d go to elevator %d. Thread: %s\n",currentFloor.get(),idNum,this.getName()));
         passengersInside.add(passenger);
         try {
             synchronized (this) {

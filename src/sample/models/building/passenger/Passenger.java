@@ -2,6 +2,7 @@ package sample.models.building.passenger;
 
 import javafx.collections.ObservableList;
 import sample.models.building.Floor;
+import sample.models.building.Logger;
 import sample.models.building.Mediator;
 
 public class Passenger {
@@ -20,7 +21,8 @@ public class Passenger {
         this.mediator = mediator;
         this.weight = weight;
         this.queue = chooseQueue();
-        System.out.println(String.format("Passenger add to %d floor %d elevator",currentFloor.getId(),queue));
+       // System.out.println(String.format("Passenger add to %d floor %d elevator",currentFloor.getId(),queue));
+        Logger.Log(String.format("Passenger add to %d floor %d queue, passenger weight %.1f \n",currentFloor.getId(),queue,weight));
         this.mediator.notify(this);
     }
 
