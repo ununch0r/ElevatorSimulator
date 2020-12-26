@@ -24,7 +24,7 @@ import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.elevator.Elevators;
-import sample.models.building.elevator.UnInterruptibleStrategy;
+import sample.models.building.elevator.InterruptibleStrategy;
 import sample.models.building.passenger.Passenger;
 import sample.models.building.passenger.PassengerManager;
 
@@ -226,22 +226,29 @@ public class Controller implements Initializable {
 
 
     private void movePersonOutOfElevator(int elevator){
-        Runnable animationMove = new Runnable() {
-            @Override
-            public void run() {
                 List<ImageView> queue = personsInElevator.get(elevator);
+                Thread elevatorThread = Building.getInstance(null,null).getElevators().get(elevator);
                 ImageView person = queue.get(0);
                 queue.remove(person);
-                personsToRemove.add(person);
-                TranslateTransition animation = new TranslateTransition(Duration.seconds(3),person);
-                animation.setToX(-person.getLayoutX());
-                animation.play();
-                queue.forEach( pers -> {
+                TranslateTransition moveOfElevatorAnimation = new TranslateTransition(Duration.seconds(0.5),person);
+        System.out.println(-person.getLayoutX() + person.getLayoutX());
+                moveOfElevatorAnimation.setToX(20);
+                TranslateTransition movePersonOutOfBuildingAnimation = new TranslateTransition(Duration.seconds(2),person);
+                movePersonOutOfBuildingAnimation.setToX(-person.getLayoutX());
+                movePersonOutOfBuildingAnimation.setOnFinished(e -> {
+                    elevatorPane.getChildren().remove(person);
+                });
+                moveOfElevatorAnimation.setOnFinished(e -> {
+                        movePersonOutOfBuildingAnimation.play();
+                        synchronized (elevatorThread) {
+                            elevatorThread.notify();
+                        }
+                });
+        moveOfElevatorAnimation.play();
+        queue.forEach(pers -> {
                     pers.setLayoutX(pers.getLayoutX() - personWidth);
                 });
-            }
-        };
-        animationMove.run();
+
     }
 
 //    public void onMoveElevatorClick(ActionEvent event) {
@@ -305,8 +312,8 @@ public class Controller implements Initializable {
         ArrayList<Floor> floors = new ArrayList<>();
         Mediator mediator = new Mediator();
         for(int i = 0;i < elevatorsNum;i++){
-            elevators.add(new Elevators(400,mediator,i));
-            elevators.get(i).setStrategy(new UnInterruptibleStrategy());
+            elevators.add(new Elevators(400,4,mediator,i));
+            elevators.get(i).setStrategy(new InterruptibleStrategy());
         }
         for(int i = 0; i < floorsNum;i++){
             floors.add(new Floor(elevatorsNum,i));
@@ -359,6 +366,9 @@ public class Controller implements Initializable {
                                 System.out.println(String.format("Passanger on floor %d go to elevator %d",elevator.getCurrentFloor(),elevator.getIdNum()));
                                 movePersonToElevator(elevator.getCurrentFloor(),elevator.getIdNum());
                             }
+                            else if(change.getRemovedSize() > 0){
+                                movePersonOutOfElevator(elevator.getIdNum());
+                            }
                         }
                     });
                 }
@@ -367,7 +377,7 @@ public class Controller implements Initializable {
         elevators.forEach(elevator -> {
             elevator.start();
         });
-        PassengerManager pm = PassengerManager.getInstance(10000,20000,mediator);
+        PassengerManager pm = PassengerManager.getInstance(1000,2000,mediator);
 
     }
 }

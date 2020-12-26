@@ -9,6 +9,7 @@ import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.passenger.Passenger;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -17,13 +18,14 @@ public class Elevators extends  Thread  {
     private IElevatorStrategy strategy;
     private float maxWeight;
     private IntegerProperty currentFloor;
-    private ObservableList<Passenger> passengersInside;
+    private final ObservableList<Passenger> passengersInside;
     private Queue<Integer> destinations;
     private DirectionEnum currentDirection;
+    private int capacity;
     private Mediator mediator;
     private int idNum;
 
-    public Elevators(float maxWeight, Mediator mediator,int idNum){
+    public Elevators(float maxWeight,int capacity, Mediator mediator,int idNum){
         passengersInside = FXCollections.observableArrayList();
         destinations = new LinkedList<>();
         currentFloor = new SimpleIntegerProperty(0);
@@ -31,6 +33,7 @@ public class Elevators extends  Thread  {
         currentDirection = DirectionEnum.Stay;
         this.mediator = mediator;
         this.idNum = idNum;
+        this.capacity = capacity;
         setName("Elevator " + idNum);
     }
 
@@ -85,6 +88,9 @@ public class Elevators extends  Thread  {
             if(passengerFloor - currentFloor.get() < 0)
             {
                 return DirectionEnum.Down;
+            }
+            else if(passengerFloor - currentFloor.get() == 0){
+                return DirectionEnum.Stay;
             }
             else
             {
@@ -219,17 +225,29 @@ public class Elevators extends  Thread  {
     public void unloadPassengers(){
         Building building = Building.getInstance(null,null);
         List<Floor> floors = building.getFloors();
+        ArrayList<Passenger> toDelete = new ArrayList<>();
+
         passengersInside.forEach(p -> {
-            if(p.getDestinationFloor().getId() == this.currentFloor.get()){
-                //запускається анімація виходу пасажира
-                passengersInside.remove(p);
+            if (p.getDestinationFloor().getId() == this.currentFloor.get()) {
+                toDelete.add(p);
             }
         });
-    }
+                    toDelete.forEach(td -> {
+                        passengersInside.remove(td);
+                        synchronized (this) {
+                            try {
+                                this.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+
 
     public boolean canEnter(Passenger passenger){
         double currentWeight = passengersInside.stream().mapToDouble(Passenger::getWeight).sum();
-        if(currentWeight + passenger.getWeight() < this.maxWeight){
+        if(passengersInside.size() < capacity && currentWeight + passenger.getWeight() < this.maxWeight){
             return true;
         } else {
             return false;
@@ -274,7 +292,7 @@ public class Elevators extends  Thread  {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                unloadPassengers();
+                if(!passengersInside.isEmpty()) unloadPassengers();
 
                 if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside)) {
                     arrivedToFloor();
