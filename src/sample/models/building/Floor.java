@@ -7,7 +7,6 @@ import sample.models.building.passenger.Passenger;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
-import java.util.logging.Logger;
 
 public class Floor {
     private final ObservableList<ObservableList<Passenger>> passengers;
@@ -37,6 +36,11 @@ public class Floor {
     public void addPassengerToQueue(Passenger passenger) {
         if (passengers.get(passenger.getQueue()).size() < maxQueueSize) {
             passengers.get(passenger.getQueue()).add(passenger);
+        }
+        else{
+            //дані про флор, чергу,
+            Logger.Log(String.format("Failed to enter the queue %d at floor %d. Queue filled, size %d\n",
+                    passenger.getQueue(),id,passengers.get(passenger.getQueue()).size()));
         }
     }
 

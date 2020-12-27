@@ -22,7 +22,7 @@ public class Passenger {
         this.weight = weight;
         this.queue = chooseQueue();
        // System.out.println(String.format("Passenger add to %d floor %d elevator",currentFloor.getId(),queue));
-        Logger.Log(String.format("Passenger add to %d floor %d queue, passenger weight %.1f \n",currentFloor.getId(),queue,weight));
+      //  Logger.Log(String.format("Passenger add to %d floor %d queue, passenger weight %.1f \n",currentFloor.getId(),queue,weight));
         this.mediator.notify(this);
     }
 
