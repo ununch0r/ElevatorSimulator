@@ -9,13 +9,13 @@ import java.util.Random;
 import java.util.TimerTask;
 
 public class PassengerCreator extends TimerTask {
-    private Floor sourceFloor;
-    private List<Floor> floors;
-    private float maxWeight;
-    private Mediator mediator;
+    private final Floor sourceFloor;
+    private final List<Floor> floors;
+    private final float maxWeight;
+    private final Mediator mediator;
 
-    public PassengerCreator(Floor floor, List<Floor> floors,float maxWeight,Mediator mediator){
-        this.sourceFloor=floor;
+    public PassengerCreator(Floor floor, List<Floor> floors, float maxWeight, Mediator mediator) {
+        this.sourceFloor = floor;
         this.floors = floors;
         this.maxWeight = maxWeight;
         this.mediator = mediator;
@@ -27,6 +27,6 @@ public class PassengerCreator extends TimerTask {
         Floor destFloor = floors.get(random.nextInt(floors.size() - 1));
         while (destFloor == sourceFloor) destFloor = floors.get(random.nextInt(floors.size() - 1));
 
-        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor,destFloor,1 + random.nextFloat() * (maxWeight - 1),mediator));
+        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor, destFloor, 1 + random.nextFloat() * (maxWeight - 1), mediator));
     }
 }

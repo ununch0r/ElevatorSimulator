@@ -7,12 +7,12 @@ import sample.models.building.Mediator;
 
 public class Passenger {
 
-    private Mediator mediator;
-    private Floor currentFloor;
-    private Floor destinationFloor;
-    private float weight;
+    private final Mediator mediator;
+    private final Floor currentFloor;
+    private final Floor destinationFloor;
+    private final float weight;
     private boolean isRiding;
-    private int queue;
+    private final int queue;
 
     public Passenger(Floor currentFloor, Floor destinationFloor, float weight, Mediator mediator) {
         this.currentFloor = currentFloor;
@@ -29,24 +29,27 @@ public class Passenger {
     public Floor getCurrentFloor() {
         return currentFloor;
     }
+
     public Floor getDestinationFloor() {
         return destinationFloor;
     }
+
     public boolean isRiding() {
         return isRiding;
     }
+
     public void setRiding(boolean riding) {
         isRiding = riding;
     }
+
     public float getWeight() {
         return weight;
     }
 
-    private int chooseQueue()
-    {
+    private int chooseQueue() {
         ObservableList<Passenger> min = currentFloor.getPassengers().stream().min((o1, o2) -> {
-            if(o1.size() > o2.size()) return 1;
-            else if(o1.size() < o2.size()) return -1;
+            if (o1.size() > o2.size()) return 1;
+            else if (o1.size() < o2.size()) return -1;
             else return 0;
         }).get();
 
