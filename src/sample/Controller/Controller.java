@@ -6,11 +6,14 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -24,7 +27,9 @@ import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
 import sample.models.building.elevator.Elevators;
+import sample.models.building.elevator.IElevatorStrategy;
 import sample.models.building.elevator.InterruptibleStrategy;
+import sample.models.building.elevator.UnInterruptibleStrategy;
 import sample.models.building.passenger.Passenger;
 import sample.models.building.passenger.PassengerManager;
 
@@ -41,17 +46,25 @@ public class Controller implements Initializable {
     private ComboBox<Integer> floorsCount;
     @FXML
     private ComboBox<Integer> elevatorsCount;
+    @FXML
+    private ComboBox<String> strategy_cb;
+    @FXML
+    private ComboBox<Integer> passangers_cb;
+    @FXML
+    private Spinner<Integer> weight_sp;
+    @FXML
+    private ComboBox<Integer> min_time_cb;
     private final double floorHeight = 49;
     private final double floorNumberOffset = 20;
     private final double floorNumberSize = 25;
     private final int maxFloors = 15;
-    private final int maxElevators = 8;
-    private final int maxPersonsInQueqe = 4;
-    private final int elevatorsCapasity = 4;
+    private final int maxElevators = 7;
+    private int maxPersonsInQueue;
+    private int elevatorsCapasity;
     private final int personWidth = 10;
-    private final double spaceBetweenElevators = maxPersonsInQueqe * personWidth + 30;
+    private final double spaceBetweenElevators = maxPersonsInQueue * personWidth + 30;
     private final double elevatorsOffset = 70;
-    private final double elevatorWidth = elevatorsCapasity * personWidth + 5;
+    private final double elevatorWidth = 65;
     private List<Rectangle> floorsViews;
     private List<Rectangle> elevatorsViews;
     private List<Label> floorLabels;
@@ -65,7 +78,9 @@ public class Controller implements Initializable {
     private int elevatorsNum;
     private Image elevatorImage;
     private Image roofImage;
-
+    private IElevatorStrategy strategy;
+    private int maxElevatorWeight;
+    private int minTimeToSpawn;
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         personsToRemove = new ArrayList<>();
@@ -87,6 +102,58 @@ public class Controller implements Initializable {
                 System.out.println("Elevators num " + elevatorsNum);
             }
         });
+        strategy_cb.getItems().add("Interraptable");
+        strategy_cb.getItems().add("Uninterraptable");
+
+        strategy_cb.setValue("Interraptable");
+        strategy = new InterruptibleStrategy();
+        strategy_cb.valueProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if(t1=="Interraptable"){
+                    strategy=new InterruptibleStrategy();
+                }
+                else strategy=new UnInterruptibleStrategy();
+            }
+        });
+        for (int i=1;i<=4;++i)
+             passangers_cb.getItems().add(i);
+        passangers_cb.setValue(4);
+        maxPersonsInQueue=4;
+        passangers_cb.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
+                maxPersonsInQueue=t1;
+                elevatorsCapasity=t1;
+            }
+        });
+
+        Integer initialValue = 100;
+        maxElevatorWeight = 100;
+        SpinnerValueFactory<Integer> valueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 400, initialValue,10);
+
+        weight_sp.setValueFactory(valueFactory);
+        weight_sp.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
+                maxElevatorWeight = t1;
+            }
+        });
+
+
+        min_time_cb.getItems().add(2);
+        min_time_cb.getItems().add(4);
+        min_time_cb.getItems().add(8);
+        min_time_cb.getItems().add(16);
+        min_time_cb.setValue(2);
+        minTimeToSpawn = 2;
+        min_time_cb.valueProperty().addListener(new ChangeListener<Integer>() {
+            @Override
+            public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
+                minTimeToSpawn = t1;
+            }
+        });
         try {
             personImages.add(new Image(new FileInputStream("src/sample/images/Person1.png")));
             personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
@@ -104,6 +171,10 @@ public class Controller implements Initializable {
         for (int i = 1; i <= maxElevators; i++) {
             elevatorsCount.getItems().add(i);
         }
+        floorsCount.setValue(2);
+        elevatorsCount.setValue(1);
+        elevatorsNum = 1;
+        floorsNum = 2;
         backgroundRect = new Rectangle(0, 0, (int) elevatorPane.getPrefWidth(), (int) elevatorPane.getPrefHeight());
         backgroundRect.setFill(new ImagePattern(roofImage));
         elevatorPane.getChildren().add(backgroundRect);
@@ -276,11 +347,11 @@ public class Controller implements Initializable {
         ArrayList<Floor> floors = new ArrayList<>();
         Mediator mediator = new Mediator();
         for (int i = 0; i < elevatorsNum; i++) {
-            elevators.add(new Elevators(400, 4, mediator, i));
-            elevators.get(i).setStrategy(new InterruptibleStrategy());
+            elevators.add(new Elevators(maxElevatorWeight, elevatorsCapasity, mediator, i));
+            elevators.get(i).setStrategy(strategy);
         }
         for (int i = 0; i < floorsNum; i++) {
-            floors.add(new Floor(elevatorsNum, 4, i));
+            floors.add(new Floor(elevatorsNum, maxPersonsInQueue, i));
         }
         building = Building.getInstance(floors, elevators);
         floors.forEach(floor -> {
@@ -340,7 +411,7 @@ public class Controller implements Initializable {
         elevators.forEach(elevator -> {
             elevator.start();
         });
-        PassengerManager pm = PassengerManager.getInstance(10000, 20000, mediator);
+        PassengerManager pm = PassengerManager.getInstance(minTimeToSpawn, minTimeToSpawn * 2, mediator);
 
     }
 }
