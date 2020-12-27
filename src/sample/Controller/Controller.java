@@ -6,8 +6,8 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
@@ -21,8 +21,10 @@ import javafx.scene.paint.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import sample.Main;
 import sample.models.building.Building;
 import sample.models.building.Floor;
 import sample.models.building.Mediator;
@@ -39,7 +41,18 @@ import java.net.URL;
 import java.util.*;
 
 public class Controller implements Initializable {
+    private final double floorHeight = 49;
+    private final double floorNumberOffset = 20;
+    private final double floorNumberSize = 25;
+    private final int maxFloors = 15;
+    private final int maxElevators = 7;
+    private final int personWidth = 10;
+    private final double spaceBetweenElevators = 65;
+    private final double elevatorsOffset = 70;
+    private final double elevatorWidth = 45;
     Random random = new Random();
+    ArrayList<Elevators> elevators = new ArrayList<>();
+    ArrayList<Floor> floors = new ArrayList<>();
     @FXML
     private AnchorPane elevatorPane;
     @FXML
@@ -54,17 +67,8 @@ public class Controller implements Initializable {
     private Spinner<Integer> weight_sp;
     @FXML
     private ComboBox<Integer> min_time_cb;
-    private final double floorHeight = 49;
-    private final double floorNumberOffset = 20;
-    private final double floorNumberSize = 25;
-    private final int maxFloors = 15;
-    private final int maxElevators = 7;
     private int maxPersonsInQueue;
     private int elevatorsCapasity;
-    private final int personWidth = 10;
-    private final double spaceBetweenElevators = maxPersonsInQueue * personWidth + 30;
-    private final double elevatorsOffset = 70;
-    private final double elevatorWidth = 65;
     private List<Rectangle> floorsViews;
     private List<Rectangle> elevatorsViews;
     private List<Label> floorLabels;
@@ -81,6 +85,7 @@ public class Controller implements Initializable {
     private IElevatorStrategy strategy;
     private int maxElevatorWeight;
     private int minTimeToSpawn;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         personsToRemove = new ArrayList<>();
@@ -91,15 +96,26 @@ public class Controller implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
                 floorsNum = t1;
-                System.out.println("Fllors num " + floorsNum);
             }
         });
-
+        Main.getPs().setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                if(elevators != null || elevators.size() > 0) {
+                    elevators.forEach(elevator -> {
+                        elevator.stop();
+                    });
+                    PassengerManager.getInstance(1, 1, null).getTimers().forEach(timer -> {
+                        timer.cancel();
+                        timer.purge();
+                    });
+                }
+            }
+        });
         elevatorsCount.valueProperty().addListener(new ChangeListener<Integer>() {
             @Override
             public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
                 elevatorsNum = t1;
-                System.out.println("Elevators num " + elevatorsNum);
             }
         });
         strategy_cb.getItems().add("Interraptable");
@@ -110,28 +126,28 @@ public class Controller implements Initializable {
         strategy_cb.valueProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-                if(t1=="Interraptable"){
-                    strategy=new InterruptibleStrategy();
-                }
-                else strategy=new UnInterruptibleStrategy();
+                if (t1 == "Interraptable") {
+                    strategy = new InterruptibleStrategy();
+                } else strategy = new UnInterruptibleStrategy();
             }
         });
-        for (int i=1;i<=4;++i)
-             passangers_cb.getItems().add(i);
+        for (int i = 1; i <= 4; ++i)
+            passangers_cb.getItems().add(i);
         passangers_cb.setValue(4);
-        maxPersonsInQueue=4;
+        maxPersonsInQueue = 4;
+        elevatorsCapasity = 4;
         passangers_cb.valueProperty().addListener(new ChangeListener<Integer>() {
             @Override
             public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
-                maxPersonsInQueue=t1;
-                elevatorsCapasity=t1;
+                maxPersonsInQueue = t1;
+                elevatorsCapasity = t1;
             }
         });
 
         Integer initialValue = 100;
         maxElevatorWeight = 100;
         SpinnerValueFactory<Integer> valueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 400, initialValue,10);
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 400, initialValue, 10);
 
         weight_sp.setValueFactory(valueFactory);
         weight_sp.valueProperty().addListener(new ChangeListener<Integer>() {
@@ -182,6 +198,8 @@ public class Controller implements Initializable {
         elevatorsViews = new ArrayList<>();
         floorLabels = new ArrayList<>();
         personsInElevator = new HashMap<>();
+        renderFloors(floorsNum);
+        renderElevators(elevatorsNum);
     }
 
 
@@ -214,6 +232,7 @@ public class Controller implements Initializable {
             curElevator.setFill(elevatorView);
             elevatorsViews.add(curElevator);
         }
+        elevatorPane.getChildren().remove(elevatorsViews);
         elevatorPane.getChildren().addAll(elevatorsViews);
     }
 
@@ -294,7 +313,6 @@ public class Controller implements Initializable {
         ImageView person = queue.get(0);
         queue.remove(person);
         TranslateTransition moveOfElevatorAnimation = new TranslateTransition(Duration.seconds(0.5), person);
-        System.out.println(-person.getLayoutX() + person.getLayoutX());
         moveOfElevatorAnimation.setToX(20);
         TranslateTransition movePersonOutOfBuildingAnimation = new TranslateTransition(Duration.seconds(Math.sqrt(person.getLayoutX()) / 5), person);
         movePersonOutOfBuildingAnimation.setToX(-person.getLayoutX());
@@ -343,8 +361,6 @@ public class Controller implements Initializable {
 
 
     public void onStart(ActionEvent event) {
-        ArrayList<Elevators> elevators = new ArrayList<>();
-        ArrayList<Floor> floors = new ArrayList<>();
         Mediator mediator = new Mediator();
         for (int i = 0; i < elevatorsNum; i++) {
             elevators.add(new Elevators(maxElevatorWeight, elevatorsCapasity, mediator, i));
@@ -365,7 +381,6 @@ public class Controller implements Initializable {
                             @Override
                             public void run() {
                                 for (int i = 0; i < countChange; i++) {
-                                    System.out.println(String.format("Passenger add to %d floor %d elevator", floor.getId(), floor.getQueueNumber(queue)));
                                     renderPerson(floor.getId(), floor.getQueueNumber(queue), queue.size());
                                 }
                             }
@@ -398,7 +413,6 @@ public class Controller implements Initializable {
                         @Override
                         public void run() {
                             if (change.getAddedSize() > 0) {
-                                System.out.println(String.format("Passanger on floor %d go to elevator %d", elevator.getCurrentFloor(), elevator.getIdNum()));
                                 movePersonToElevator(elevator.getCurrentFloor(), elevator.getIdNum());
                             } else if (change.getRemovedSize() > 0) {
                                 movePersonOutOfElevator(elevator.getIdNum());
@@ -411,7 +425,7 @@ public class Controller implements Initializable {
         elevators.forEach(elevator -> {
             elevator.start();
         });
-        PassengerManager pm = PassengerManager.getInstance(minTimeToSpawn, minTimeToSpawn * 2, mediator);
+        PassengerManager pm = PassengerManager.getInstance(minTimeToSpawn * 1000, (minTimeToSpawn * 2) * 1000, mediator);
 
     }
 }

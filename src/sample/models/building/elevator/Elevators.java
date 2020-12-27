@@ -24,6 +24,7 @@ public class Elevators extends Thread {
     private IElevatorStrategy strategy;
     private DirectionEnum currentDirection;
 
+
     private String threadName;
 
     public Elevators(float maxWeight, int capacity, Mediator mediator, int idNum) {
@@ -35,7 +36,6 @@ public class Elevators extends Thread {
         this.mediator = mediator;
         this.idNum = idNum;
         this.capacity = capacity;
-        // this.threadName=Thread.currentThread().getName();
         setName("Elevator " + idNum);
     }
 

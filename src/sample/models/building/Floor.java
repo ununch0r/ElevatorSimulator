@@ -4,10 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import sample.models.building.passenger.Passenger;
 
-import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-
 public class Floor {
     private final ObservableList<ObservableList<Passenger>> passengers;
     private final int maxQueueSize;
@@ -21,8 +17,7 @@ public class Floor {
         for (int i = 0; i < amountOfElevators; ++i) {
             passengers.add(FXCollections.observableArrayList());
         }
-        //logger=Logger.getLogger("Floor Logger");
-        //ConfigLogger();
+
     }
 
     public ObservableList<ObservableList<Passenger>> getPassengers() {
@@ -36,11 +31,9 @@ public class Floor {
     public void addPassengerToQueue(Passenger passenger) {
         if (passengers.get(passenger.getQueue()).size() < maxQueueSize) {
             passengers.get(passenger.getQueue()).add(passenger);
-        }
-        else{
-            //дані про флор, чергу,
+        } else {
             Logger.Log(String.format("Failed to enter the queue %d at floor %d. Queue filled, size %d\n",
-                    passenger.getQueue(),id,passengers.get(passenger.getQueue()).size()));
+                    passenger.getQueue(), id, passengers.get(passenger.getQueue()).size()));
         }
     }
 

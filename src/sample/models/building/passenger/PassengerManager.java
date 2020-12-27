@@ -22,7 +22,7 @@ public class PassengerManager {
 
         for (Floor floor : floors) {
             Timer timer = new Timer();
-            timer.schedule(new PassengerCreator(floor, floors, 60, mediator), random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1), random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
+            timer.schedule(new PassengerCreator(floor, floors, random.nextInt(60) + 40, mediator), random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1), random.nextInt(maxTimeToSpawn - minTimeToSpawn + 1) + minTimeToSpawn);
             timers.add(timer);
         }
     }
@@ -30,5 +30,9 @@ public class PassengerManager {
     public static PassengerManager getInstance(int minTimeToSpawn, int maxTimeToSpawn, Mediator mediator) {
         if (instance == null) instance = new PassengerManager(minTimeToSpawn, maxTimeToSpawn, mediator);
         return instance;
+    }
+
+    public List<Timer> getTimers() {
+        return timers;
     }
 }
