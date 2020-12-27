@@ -34,13 +34,6 @@ import java.net.URL;
 import java.util.*;
 
 public class Controller implements Initializable {
-    Random random = new Random();
-    @FXML
-    private AnchorPane elevatorPane;
-    @FXML
-    private ComboBox<Integer> floorsCount;
-    @FXML
-    private ComboBox<Integer> elevatorsCount;
     private final double floorHeight = 49;
     private final double floorNumberOffset = 20;
     private final double floorNumberSize = 25;
@@ -52,6 +45,13 @@ public class Controller implements Initializable {
     private final double spaceBetweenElevators = maxPersonsInQueqe * personWidth + 30;
     private final double elevatorsOffset = 70;
     private final double elevatorWidth = elevatorsCapasity * personWidth + 5;
+    Random random = new Random();
+    @FXML
+    private AnchorPane elevatorPane;
+    @FXML
+    private ComboBox<Integer> floorsCount;
+    @FXML
+    private ComboBox<Integer> elevatorsCount;
     private List<Rectangle> floorsViews;
     private List<Rectangle> elevatorsViews;
     private List<Label> floorLabels;
@@ -294,7 +294,6 @@ public class Controller implements Initializable {
                             @Override
                             public void run() {
                                 for (int i = 0; i < countChange; i++) {
-                                    System.out.println(String.format("Passenger add to %d floor %d elevator", floor.getId(), floor.getQueueNumber(queue)));
                                     renderPerson(floor.getId(), floor.getQueueNumber(queue), queue.size());
                                 }
                             }
@@ -327,7 +326,6 @@ public class Controller implements Initializable {
                         @Override
                         public void run() {
                             if (change.getAddedSize() > 0) {
-                                System.out.println(String.format("Passanger on floor %d go to elevator %d", elevator.getCurrentFloor(), elevator.getIdNum()));
                                 movePersonToElevator(elevator.getCurrentFloor(), elevator.getIdNum());
                             } else if (change.getRemovedSize() > 0) {
                                 movePersonOutOfElevator(elevator.getIdNum());

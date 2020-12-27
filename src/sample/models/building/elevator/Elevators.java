@@ -35,7 +35,7 @@ public class Elevators extends Thread {
         this.mediator = mediator;
         this.idNum = idNum;
         this.capacity = capacity;
-       // this.threadName=Thread.currentThread().getName();
+        // this.threadName=Thread.currentThread().getName();
         setName("Elevator " + idNum);
     }
 
@@ -182,18 +182,17 @@ public class Elevators extends Thread {
 
             }
         });
-                    toDelete.forEach(td -> {
-                        passengersInside.remove(td);
-                        synchronized (this) {
-                            try {
-                                this.wait();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
+        toDelete.forEach(td -> {
+            passengersInside.remove(td);
+            synchronized (this) {
+                try {
+                    this.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-
+            }
+        });
+    }
 
 
     public boolean canEnter(Passenger passenger) {
@@ -201,8 +200,8 @@ public class Elevators extends Thread {
         return passengersInside.size() < capacity && currentWeight + passenger.getWeight() < this.maxWeight;
     }
 
-    public void addPassenger(Passenger passenger){
-            passengersInside.add(passenger);
+    public void addPassenger(Passenger passenger) {
+        passengersInside.add(passenger);
         try {
             synchronized (this) {
                 this.wait();
@@ -237,12 +236,13 @@ public class Elevators extends Thread {
                     e.printStackTrace();
                 }
                 if (!passengersInside.isEmpty()) unloadPassengers();
-
-                if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside, destinations.element())
-                ) {
-                    arrivedToFloor();
-                    if (currentFloor.get() == destinations.element()) {
-                        destinations.poll();
+                if (!destinations.isEmpty()) {
+                    if (strategy.ifLoadPassengers(this.currentFloor.get(), this.passengersInside, destinations.element())
+                    ) {
+                        arrivedToFloor();
+                        if (currentFloor.get() == destinations.element()) {
+                            destinations.poll();
+                        }
                     }
                 }
 
