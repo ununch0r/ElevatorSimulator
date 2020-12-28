@@ -27,6 +27,7 @@ public class PassengerCreator extends TimerTask {
         Floor destFloor = floors.get(random.nextInt(floors.size() - 1));
         while (destFloor == sourceFloor) destFloor = floors.get(random.nextInt(floors.size() - 1));
 
-        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor, destFloor, 1 + random.nextFloat() * (maxWeight - 1), mediator));
+        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor, destFloor, random.nextInt(60) + 40 * random.nextFloat(), mediator));
+//        sourceFloor.addPassengerToQueue(new Passenger(sourceFloor, destFloor, 40 + random.nextFloat() * (maxWeight - 1) * 0.5f, mediator));
     }
 }

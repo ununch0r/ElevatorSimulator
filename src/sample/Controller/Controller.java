@@ -134,7 +134,7 @@ public class Controller implements Initializable {
                     elevators.forEach(elevator -> {
                         elevator.stop();
                     });
-                    PassengerManager.getInstance(1, 1, null).getTimers().forEach(timer -> {
+                    PassengerManager.getInstance(1, 1,1, null).getTimers().forEach(timer -> {
                         timer.cancel();
                         timer.purge();
                     });
@@ -269,6 +269,9 @@ public class Controller implements Initializable {
 
 
     private void moveElevatorToFloor(int elevatorNum, int srcFloor, int destFloor) {
+        if(srcFloor == destFloor){
+            return;
+        }
         Elevators elevatorThread = building.getElevators().get(elevatorNum);
         Rectangle elevator = elevatorsViews.get(elevatorNum);
         Rectangle floor = floorsViews.get(destFloor);
@@ -418,7 +421,7 @@ public class Controller implements Initializable {
         elevators.forEach(elevator -> {
             elevator.start();
         });
-        PassengerManager pm = PassengerManager.getInstance(minTimeToSpawn * 1000, (minTimeToSpawn * 2) * 1000, mediator);
+        PassengerManager pm = PassengerManager.getInstance(minTimeToSpawn * 1000, (minTimeToSpawn * 2) * 1000,maxElevatorWeight, mediator);
 
     }
 }

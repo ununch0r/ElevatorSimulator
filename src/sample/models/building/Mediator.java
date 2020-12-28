@@ -22,7 +22,7 @@ public class Mediator {
 
 
         elevator.AddNewDestination(passenger.getCurrentFloor().getId());
-        if (elevator.getCurrentDirection() == DirectionEnum.Stay) {
+        if (elevator.getCurrentDirection() == DirectionEnum.Wait) {
             synchronized (elevator) {
                 elevator.notify();
             }

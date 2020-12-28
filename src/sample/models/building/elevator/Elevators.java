@@ -113,6 +113,12 @@ public class Elevators extends Thread {
         if (currentDirection == DirectionEnum.Up) {
             currentDirection = DirectionEnum.Down;
         }
+        if(getPassengerFloor(passengersInside.get(0)) > getCurrentFloor()){
+            currentDirection = DirectionEnum.Up;
+        }
+        else{
+            currentDirection = DirectionEnum.Down;
+        }
     }
 
     private boolean isChangeDirectionNeeded() {
@@ -122,7 +128,11 @@ public class Elevators extends Thread {
                     return true;
                 }
             }
-        } else {
+        }
+        else if(currentDirection == DirectionEnum.Stay){
+            return true;
+        }
+        else {
             for (Passenger p : passengersInside) {
                 if (currentFloor.get() - getPassengerFloor(p) > 0) {
                     return true;
@@ -228,12 +238,14 @@ public class Elevators extends Thread {
         while (true) {
             if (!destinations.isEmpty() || !passengersInside.isEmpty()) {
                 goToFloor(moveNext());
-                try {
-                    synchronized (this) {
-                        this.wait();
+                if(currentDirection != DirectionEnum.Stay) {
+                    try {
+                        synchronized (this) {
+                            this.wait();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
                 if (!passengersInside.isEmpty()) unloadPassengers();
                 if (!destinations.isEmpty()) {
@@ -248,7 +260,7 @@ public class Elevators extends Thread {
 
 
             } else {
-                currentDirection = DirectionEnum.Stay;
+                currentDirection = DirectionEnum.Wait;
                 try {
                     synchronized (this) {
                         this.wait();
