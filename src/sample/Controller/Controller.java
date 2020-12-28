@@ -121,6 +121,7 @@ public class Controller implements Initializable {
                 if (elevatorsNum != 0) {
                     if (!elevatorsViews.isEmpty()) {
                         elevatorPane.getChildren().removeAll(elevatorsViews);
+                        elevatorsViews.clear();
                         renderElevators(elevatorsNum);
                     }
                 }
