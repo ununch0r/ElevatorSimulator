@@ -5,9 +5,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Spinner?>
-<?import javafx.scene.effect.Light.Distant?>
-<?import javafx.scene.effect.Lighting?>
-<?import javafx.scene.effect.Shadow?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.paint.LinearGradient?>
@@ -20,10 +18,10 @@
         <AnchorPane fx:id="elevatorPane" prefHeight="728.0" prefWidth="966.0" BorderPane.alignment="CENTER" />
     </left>
    <center>
-        <AnchorPane prefHeight="728.0" prefWidth="425.0" style="-fx-background-color: #333433;" BorderPane.alignment="CENTER">
+        <AnchorPane prefHeight="740.0" prefWidth="374.0" style="-fx-background-color: #333433;" BorderPane.alignment="CENTER">
             <children>
-                <ComboBox fx:id="elevatorsCount" layoutX="108.0" layoutY="220.0" onAction="#onElevatorCountChange" prefHeight="44.0" prefWidth="211.0" />
-                <ComboBox fx:id="floorsCount" layoutX="108.0" layoutY="137.0" onAction="#onFloorCountChange" prefHeight="44.0" prefWidth="211.0" />
+                <ComboBox fx:id="elevatorsCount" layoutX="108.0" layoutY="220.0" prefHeight="44.0" prefWidth="211.0" />
+                <ComboBox fx:id="floorsCount" layoutX="108.0" layoutY="137.0"  prefHeight="44.0" prefWidth="211.0" />
                 <Label layoutX="177.0" layoutY="98.0" text="Floors" textFill="WHITE">
                <font>
                   <Font size="27.0" />
@@ -34,19 +32,12 @@
                   <Font size="27.0" />
                </font>
             </Label>
-            <Button layoutY="617.0" mnemonicParsing="false" onAction="#onStart" prefHeight="90.0" prefWidth="426.0" style="-fx-background-color: linear-gradient(#FAFAFE, #E8f5fc);" text="Start" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="630.0">
+            <Button layoutY="617.0" mnemonicParsing="false" onAction="#onStart" prefHeight="90.0" prefWidth="426.0" style="-fx-background-color: #3d5c5c;" text="Start" textFill="WHITE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="630.0">
                <font>
                   <Font name="Comic Sans MS" size="52.0" />
                </font>
                <effect>
-                  <Lighting diffuseConstant="1.09" specularConstant="0.0" specularExponent="15.35" surfaceScale="4.05">
-                     <bumpInput>
-                        <Shadow />
-                     </bumpInput>
-                     <light>
-                        <Light.Distant color="#e1811a" />
-                     </light>
-                  </Lighting>
+                  <DropShadow />
                </effect>
             </Button>
             <Label layoutX="7.0" layoutY="8.0" prefHeight="75.0" prefWidth="401.0" text="Elevator Simulator" AnchorPane.leftAnchor="15.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="0.0">
@@ -84,7 +75,7 @@
                   <Font size="27.0" />
                </font>
             </Label>
-            <ComboBox fx:id="min_time_cb" layoutX="109.0" layoutY="473.0" onAction="#onElevatorCountChange" prefHeight="44.0" prefWidth="211.0" />
+            <ComboBox fx:id="min_time_cb" layoutX="109.0" layoutY="473.0"  prefHeight="44.0" prefWidth="211.0" />
             <Label layoutX="160.0" layoutY="434.0" prefHeight="39.0" prefWidth="116.0" text="Min Time" textFill="WHITE">
                <font>
                   <Font size="27.0" />

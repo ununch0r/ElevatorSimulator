@@ -48,7 +48,6 @@ public class Controller implements Initializable {
     private final int maxElevators = 7;
     private final int personWidth = 10;
     private final double spaceBetweenElevators = 65;
-    private final double elevatorsOffset = 70;
     private final double elevatorWidth = 45;
     Random random = new Random();
     ArrayList<Elevators> elevators = new ArrayList<>();
@@ -88,20 +87,49 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        personsToRemove = new ArrayList<>();
+        personImages = new ArrayList<>();
+        try {
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person1.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person3.png")));
+            personImages.add(new Image(new FileInputStream("src/sample/images/Person4.png")));
+            elevatorImage = new Image(new FileInputStream("src/sample/images/elevator.png"));
+            roofImage = new Image(new FileInputStream("src/sample/images/roof.jpeg"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        backgroundRect = new Rectangle(0, 0, (int) elevatorPane.getPrefWidth(), (int) elevatorPane.getPrefHeight());
+        backgroundRect.setFill(new ImagePattern(roofImage));
+        elevatorPane.getChildren().add(backgroundRect);
+        floorsViews = new ArrayList<>();
+        elevatorsViews = new ArrayList<>();
+        floorLabels = new ArrayList<>();
+        personsInElevator = new HashMap<>();
         random = new Random();
         queues = new HashMap<>();
-        personImages = new ArrayList<>();
         floorsCount.valueProperty().addListener(new ChangeListener<Integer>() {
             @Override
             public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
                 floorsNum = t1;
+                if (floorsViews != null && !floorsViews.isEmpty()) {
+                    elevatorPane.getChildren().removeAll(floorsViews);
+                    elevatorPane.getChildren().removeAll(floorLabels);
+                    floorsViews.clear();
+                    floorLabels.clear();
+                }
+                renderFloors(floorsNum);
+                if (elevatorsNum != 0) {
+                    if (!elevatorsViews.isEmpty()) {
+                        elevatorPane.getChildren().removeAll(elevatorsViews);
+                        renderElevators(elevatorsNum);
+                    }
+                }
             }
         });
         Main.getPs().setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                if(elevators != null || elevators.size() > 0) {
+                if (elevators != null && elevators.size() > 0) {
                     elevators.forEach(elevator -> {
                         elevator.stop();
                     });
@@ -116,6 +144,12 @@ public class Controller implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Integer> observableValue, Integer integer, Integer t1) {
                 elevatorsNum = t1;
+                if (elevatorsViews != null && !elevatorsViews.isEmpty()) {
+                    elevatorPane.getChildren().removeAll(elevatorsViews);
+                    elevatorsViews.clear();
+                }
+                renderElevators(elevatorsNum);
+
             }
         });
         strategy_cb.getItems().add("Interraptable");
@@ -170,16 +204,7 @@ public class Controller implements Initializable {
                 minTimeToSpawn = t1;
             }
         });
-        try {
-            personImages.add(new Image(new FileInputStream("src/sample/images/Person1.png")));
-            personImages.add(new Image(new FileInputStream("src/sample/images/Person2.png")));
-            personImages.add(new Image(new FileInputStream("src/sample/images/Person3.png")));
-            personImages.add(new Image(new FileInputStream("src/sample/images/Person4.png")));
-            elevatorImage = new Image(new FileInputStream("src/sample/images/elevator.png"));
-            roofImage = new Image(new FileInputStream("src/sample/images/roof.jpeg"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+
 
         for (int i = 2; i <= maxFloors; i++) {
             floorsCount.getItems().add(i);
@@ -191,15 +216,7 @@ public class Controller implements Initializable {
         elevatorsCount.setValue(1);
         elevatorsNum = 1;
         floorsNum = 2;
-        backgroundRect = new Rectangle(0, 0, (int) elevatorPane.getPrefWidth(), (int) elevatorPane.getPrefHeight());
-        backgroundRect.setFill(new ImagePattern(roofImage));
-        elevatorPane.getChildren().add(backgroundRect);
-        floorsViews = new ArrayList<>();
-        elevatorsViews = new ArrayList<>();
-        floorLabels = new ArrayList<>();
-        personsInElevator = new HashMap<>();
-        renderFloors(floorsNum);
-        renderElevators(elevatorsNum);
+
     }
 
 
@@ -249,31 +266,6 @@ public class Controller implements Initializable {
         elevatorPane.getChildren().add(newPerson);
     }
 
-    public void onFloorCountChange(ActionEvent event) {
-        if (!floorsViews.isEmpty()) {
-            elevatorPane.getChildren().removeAll(floorsViews);
-            elevatorPane.getChildren().removeAll(floorLabels);
-            floorsViews.clear();
-            floorLabels.clear();
-        }
-        renderFloors(floorsCount.getSelectionModel().getSelectedItem());
-        if (elevatorsCount.getSelectionModel().getSelectedItem() != null) {
-            if (!elevatorsViews.isEmpty()) {
-                elevatorPane.getChildren().removeAll(elevatorsViews);
-                renderElevators(elevatorsCount.getSelectionModel().getSelectedItem());
-            }
-        }
-    }
-
-    public void onElevatorCountChange(ActionEvent event) {
-        if (!elevatorsViews.isEmpty()) {
-            elevatorPane.getChildren().removeAll(elevatorsViews);
-            elevatorsViews.clear();
-        }
-        renderElevators(elevatorsCount.getSelectionModel().getSelectedItem());
-
-
-    }
 
     private void moveElevatorToFloor(int elevatorNum, int srcFloor, int destFloor) {
         Elevators elevatorThread = building.getElevators().get(elevatorNum);

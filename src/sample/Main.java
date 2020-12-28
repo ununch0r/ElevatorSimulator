@@ -28,8 +28,8 @@ public class Main extends Application {
         primaryStage.setTitle("Elevator simulation");
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         Screen screen = Screen.getPrimary();
-        double sceneWidth = screen.getVisualBounds().getWidth();
-        double sceneHeight = screen.getVisualBounds().getHeight();
+        double sceneWidth = 1366.0;
+        double sceneHeight = 728.0;
         primaryStage.setScene(new Scene(root, sceneWidth, sceneHeight));
         primaryStage.show();
         Logger.ConfigLogger();
